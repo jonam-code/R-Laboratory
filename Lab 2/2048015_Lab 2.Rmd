@@ -1,0 +1,203 @@
+---
+title: "LAB 2"
+author: "2048015 - MANOJ KUMAR"
+date: "25/01/2021"
+output: word_document
+---
+
+
+### 1. Create a vector different data types(Logical, Numeric, Integer, Complex, Character) and display their class and typeof each datatype.
+
+```{r}
+# Logical Datatype
+
+Vector_Logical <- c(TRUE, FALSE , TRUE, FALSE)
+sprintf('The class of Vector_Logical is: %s', class(Vector_Logical))
+sprintf('The type of Vector_Logical is: %s', typeof(Vector_Logical))
+```
+
+
+```{r}
+# Numeric Datatype
+
+Vector_Numeric <- c(2048015, 1948015, 1848015)
+sprintf('The class of Vector_Numeric is: %s', class(Vector_Numeric))
+sprintf('The type of Vector_Numeric is: %s', typeof(Vector_Numeric))
+```
+
+```{r}
+# Integer Datatype
+
+Vector_Integer <- c(75L, 85L)
+sprintf('The class of Vector_Integer is: %s', class(Vector_Integer))
+sprintf('The type of Vector_Integer is: %s', typeof(Vector_Integer))
+```
+
+```{r}
+# Complex Datatype
+
+Vector_Complex <- c(2 + 4i, 2 + 3i)
+sprintf('The class of Vector_Complex is: %s', class(Vector_Complex))
+sprintf('The type of Vector_Complex is: %s', typeof(Vector_Complex))
+```
+
+```{r}
+#Character Datatype
+
+Vector_Char <- c('Manoj', "Kumar", "MDS")
+sprintf('The class of Vector_Char is: %s', class(Vector_Char))
+sprintf('The type of Vector_Char is: %s', typeof(Vector_Char))
+```
+
+### 2. Get and print the current working directory.
+
+```{r}
+
+sprintf('The current directory is: %s', getwd())
+```
+
+```{r}
+# To set the directory.
+
+setwd("/Users/manojkumarr/Downloads/Other/Christ University/SEM 2/R/Lab")
+sprintf('The new directory is: %s', getwd())
+```
+
+### 3. Create this file using windows notepad by copying and pasting this data. Save the file as student.csv
+
+S.No ,Sname, Degree, Total.marks, Grade
+1,Andrew,UG,435,B
+2,Babita,UG,210,D
+3,Cathy,UG,459,A
+4,Dominic,UG,542,A
+5,Elsa,PG,520,B
+6,Franko,PG,320,C
+7,Gorang,UG,205,D 
+8,Harsha,PG,325,C 
+
+```{r}
+## student.csv file created.
+```
+
+### 4.Save this file in the current working directory.
+
+```{r}
+## File Saved in the current working directory 
+```
+
+
+### 5.Read the csv file in your current working directory.
+
+```{r}
+student_details<-read.csv("student.csv")
+student_details
+```
+
+### 6.Check whether your  CSV file is a dataframe and also check the number of rows and columns.
+
+```{r}
+sprintf('The class of df is: %s', class(student_details))
+```
+```{r}
+# nrow(df) gives the number of rows in df.
+
+sprintf('Number of rows in df is: %s', nrow(student_details))
+```
+```{r}
+# ncol(df) gives the number of columns in df.
+
+sprintf('Number of columns in df is: %s', ncol(student_details))
+```
+
+### 7. Apply all the functions sum(),mean(),sqrt()related to dataframe.
+
+```{r}
+str(student_details)
+```
+
+**Total marks is the only column that is numerical. So we will be performing the functions in that particular column only**
+```{r}
+Total_Marks <- student_details$Total.marks
+Total_Marks
+```
+
+```{r}
+# SUM
+
+sprintf('Sum of Total marks is: %s', sum(Total_Marks))
+```
+
+```{r}
+# MEAN
+
+sprintf('Mean of Total marks is: %s', mean(Total_Marks))
+```
+
+```{r}
+# Square root of Total Marks for each student is:-
+
+sprintf('Square root of Total marks is: %s',sqrt(Total_Marks))
+```
+
+### 8.Get the highest marks from the data frame.
+
+```{r}
+HighestMark<-max(student_details$Total.marks)
+sprintf('The Highest Marks is: %s', HighestMark)
+```
+
+### 9. Get the details of the person with highest marks.
+
+```{r}
+# Case 1
+
+index=which.max(student_details$Total.marks)
+student_details[index,]
+```
+
+
+```{r}
+# Case 2
+
+HighestScorer = subset(student_details, Total.marks==max(student_details$Total.marks))
+HighestScorer
+```
+
+
+```{r}
+# Case 3
+
+student_details[student_details$Total.marks == max(student_details$Total.marks),]
+```
+
+### 10. Get all the students in UG degree whose marks is greater than 300.
+
+```{r}
+Students_list1 <- student_details[(student_details$Degree == 'UG') & (student_details$Total.marks > 300), ]
+Students_list1
+```
+
+### 11. Add one more vector  Date_ of_ Joining(DOJ)  to the already existing dataframe.
+```{r}
+library(lubridate)
+```
+
+```{r}
+doj <- c("20160505","20160507","20170509","20180517","20290621","20200625","20200627", "20200611")
+
+student_details$Date_of_Joining<-as.Date(doj, format = "%Y%m%d")
+student_details
+```
+
+### 12. Get the details of the students who have joined after 2017.
+
+```{r}
+Student_list2 <- student_details[year(student_details$Date_of_Joining) > 2017, ]
+Student_list2
+```
+
+### 13. Write the filtered data into a new file.
+
+```{r}
+write.csv(Student_list2, "/Users/manojkumarr/Downloads/Other/Christ University/SEM 2/R/Lab/result.csv")
+```

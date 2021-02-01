@@ -1,0 +1,194 @@
+---
+title: "LAB 2"
+author: "2048015 - MANOJ KUMAR"
+date: "29/01/2021"
+output: word_document
+---
+
+
+### 1.Import the LungCapData into R and attach it.
+
+```{r}
+## Library for importing/reading Excel dataset.
+library(readxl)
+
+dataframe <- read_excel("Lungcap.xlsx")
+dataframe
+```
+
+### 2. Find the class and typeof Age and Height.
+
+```{r}
+## Age
+
+sprintf('The class of Age is: %s', class(dataframe$Age))
+sprintf('The type of Age is: %s', typeof(dataframe$Age))
+```
+
+
+```{r}
+## Height
+
+sprintf('The class of Height is: %s', class(dataframe$Height))
+sprintf('The type of Height is: %s', typeof(dataframe$Height))
+```
+
+### 3. Find the summary of the dataset.
+
+```{r}
+## Summary function describe entire dataset.
+
+summary(dataframe)
+```
+
+### 4.Find the strength of the relationship between Age and Height (Hint:Using Correlation).
+
+```{r}
+## Correlation function
+
+cor(dataframe$Age,dataframe$Height)
+
+#The correlation coefficient is a number between 1 and -1
+```
+
+### 5.Perform a scatterplot for the above (Qn.4).
+
+```{r}
+## Case 1
+
+x <- dataframe$Age
+y <- dataframe$Height
+
+plot(x, y, 
+     main = "Correlation between Age and Height", 
+     xlab = "Age", 
+     ylab = "Height",     
+     cex.lab = "1",
+     col = "Brown",
+     pch = 15
+     )
+```
+
+
+```{r}
+## Case 2
+
+# Importing ggplot for plotting 
+library(ggplot2)
+
+x <- dataframe$Age
+y <- dataframe$Height
+
+ggplot(dataframe, aes(x, y)) + geom_point()
+```
+
+### 6. Add a title to the plot and Label  x-axis and y-axis.
+
+```{r}
+plot(x, y, 
+     main = "Correlation between Age and Height", 
+     xlab = "Age",
+     ylab = "Height",     
+     cex.lab = "1",
+     col = "Blue",
+     pch = 10
+     )
+```
+
+### 7.Rotate the values on the y-axis and also change the limits of x-axis and y-axis.
+
+```{r}
+## Case 1
+plot(x, y, 
+     main = "Correlation between Age and Height", 
+     xlab = "Age",
+     ylab = "Height",
+     xlim = c(1, 25),
+     ylim = c(30, 90),
+     cex.lab = "1",
+     col = "Black",
+     pch = 10
+     )
+```
+```{r}
+
+plot = ggplot(dataframe, aes(x, y)) + geom_point() 
+plot + theme(axis.text.y = element_text (angle = 60, hjust = 1))
+```
+
+
+### 8.  Remove the axes of the plot and relabel these axes.
+
+```{r}
+plot(x, y, 
+     xlab = "Age", ylab = "Height",
+     xlim = c(1,25), ylim = c(40,85),
+     axes = FALSE, pch = 8
+     )
+```
+
+### 9.Change the size of the plotting characters.
+
+```{r}
+plot(x, y, 
+     xlab = "Height", ylab = "Age" ,
+     main = "Age Vs Height",
+     pch = 15, cex= 0.2
+     )
+```
+
+### 10.Change the color of the characters to red.
+
+```{r}
+plot(x, y, 
+     xlab = "Height", ylab = "Age" ,
+     main = "Age Vs Height",
+     col = "Red", pch = 15, cex= 0.2
+     )
+```
+
+### 11.Draw the regression line to the plot predicting height using age.
+
+```{r}
+# Importing ggplot for plotting 
+
+library(ggplot2)
+
+ggplot(dataframe, aes(x, y)) + geom_point() + geom_smooth(method = lm, 
+                                                          color = "red")
+```
+
+### 12.Change the color of the line to blue and the width of the line.
+
+```{r}
+
+ggplot(dataframe, aes(x, y)) + geom_point() + geom_smooth(method = lm, 
+                                                          color = "blue",
+                                                          size = 0.2 )
+```
+
+### 13.Change the font of the plotting characters.
+
+```{r}
+
+plot + geom_smooth (method = lm, color = "blue", size = 0.3) + geom_point(shape=15)
+
+```
+
+### 14.Change the color of the plotting characters.
+
+```{r}
+
+plot + geom_smooth(method = lm, 
+                   color = "blue",
+                   size = 0.3) + geom_point (shape = 16, color = "#e28743")
+``` 
+
+### 15.Identify gender on the plot for the age male and female.
+
+```{r}
+plot + geom_smooth(method = lm, 
+                   color = "blue",
+                   size = 0.3) + geom_point (shape = 16,aes(color=Gender))
+```
+

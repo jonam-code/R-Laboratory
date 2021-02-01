@@ -1,0 +1,134 @@
+---
+title: "LAB 1"
+author: "2048015 - MANOJ KUMAR"
+date: "22/01/2021"
+output: word_document
+---
+
+### 1. Define the object "myobject" and assign the vector 1:10 in at least 3 different ways.
+
+```{r}
+# To create a vector with numerical values in a sequence, use the : operator and seq() function can be used. 
+
+# Type - 1
+myobject <- 1:10
+myobject
+```
+```{r}
+# Type - 2
+myobject <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+myobject
+```
+```{r}
+# Type - 3
+myobject <- seq(from = 1,
+                to   = 10,
+                by   = 1)
+myobject
+```
+
+
+### 2. Get the sum of your object.
+
+```{r}
+# To get the sum of the object sum() function can be used.
+
+sum_myobject <- sum(myobject)
+sum_myobject
+```
+
+### 3. Create the following vector by using the paste function.
+
+    [1] "R is great 4 and I will love it"
+    [2] "R is great 7 and I will love it"
+    [3] "R is great 45 and I will love it"
+   
+```{r}
+n = paste0(c(4,7,45))
+paste("R is great",n,"and I will love it.")
+```
+   
+### 4. Vector of 1,2,3, repeat the vector to get 11 x 1, 10 x 2, and 10 x3 
+
+```{r}
+Vector = c(1,2,3)
+Vector_1 = rep(c(11,10,10),
+               times = Vector)
+Vector_1
+```
+
+### 5. What is the value of this vector on position 7?
+
+```{r}
+Vector_1[7]
+```
+
+### 6. Repeat the string “Hello R” thrice.
+
+```{r}
+rep("Hello R", 3)
+```
+
+### 7. Repeat the first  element of a vector twice and the second element of the vector thrice.
+
+  Eg: 1  1  2 2 2
+ 
+```{r}
+# Repeating each independently
+
+# case 1
+vector <- rep(c(5, 7), times = c(2, 3))
+vector
+```
+```{r}
+# case 2
+vector = c(3,5,7)
+d = length(vector)
+l = 2:(d+1)
+
+rep(vector,times = l)
+```
+
+           
+### 8. Create a matrix of two rows and three columns.
+
+```{r}
+matrix_a <- matrix(1:6,  # Taking sequence of elements using : operator 
+                   2,    # No of rows 
+                   3     # No of columns 
+                   )     # By default matrices are in column-wise order
+             
+matrix_a
+```
+
+### 9. Create a matrix 3X3 by row-wise.
+
+```{r}
+matrix_b <- matrix(1:9,         
+                   nrow  = 3,   
+                   ncol  = 3,     
+                   byrow = TRUE 
+                   # This parameter decides how to arrange the matrix 
+                   )
+matrix_b
+```
+
+### 10. Build a vectors of random values with the sample() function.
+
+    Find the min(),max(),range(),length(),sum(),prod(),mean(),var().
+  
+```{r}
+sample_vector <- sample(15)
+sample_vector
+```
+```{r}
+min(sample_vector)
+max(sample_vector)
+range(sample_vector)
+length(sample_vector)
+sum(sample_vector)
+prod(sample_vector)
+mean(sample_vector)
+var(sample_vector)
+```
+
