@@ -1,0 +1,114 @@
+---
+title: "Regression Analysis"
+author: "MANOJ KUMAR - 2048015"
+date: "30/01/2021"
+output: word_document
+---
+
+
+## 1.Import the dataset data_marketing_budget_mo12 and do the exploratory data analysis .
+```{r}
+# Importing the shared Marketing Budget Data.
+
+RocketData <- read.csv("data-marketing-budget.csv")
+RocketData
+
+# Summary
+summary(RocketData)
+
+```
+
+## 2. Use Scatter Plot To Visualise The Relationship.
+```{r}
+scatter.smooth(x = RocketData$Month, 
+               y = RocketData$Spend, 
+               xlab = "Month", ylab = "Spending",  # X,Y-Lab
+               main = "Spending over Month",       # Title
+               col.main = "Black",                 # Title lab color
+               cex.lab = "1"                       # X,Y-axis Lab color
+)
+```
+```{r}
+scatter.smooth(x = RocketData$Month, 
+               y = RocketData$Sales, 
+               xlab = "Month", ylab = "Sales",   # X,Y-Lab
+               main = "Sales over Month",        # Title
+               col.main = "Black",               # Title lab color
+               cex.lab = "1"                     # X,Y-axis Lab color 
+)
+```
+
+
+## 3.Using BoxPlot To Check For Outliers.
+```{r}
+boxplot(RocketData$Sales, main = "Sales" )
+```
+```{r}
+boxplot.default(RocketData$Spend, main = "Spending" )
+```
+
+## 4. Using Density Plot To Check If Response Variable Is Close To Normal.
+```{r}
+library(e1071)       # For skewness function
+par(mfrow = c(1,2))  # Dividing graph area in 2 columns
+
+# Density plot for 'Spend'
+plot(density(RocketData$Spend), 
+     main = "Density : Spend",
+     ylab = "Frequency",
+     sub=paste("Skewness :",
+               round(e1071::skewness(RocketData$Spend),
+                     2
+                     )
+               )
+     ) 
+polygon(density(RocketData$Spend), col = "orange")
+
+# Density plot for 'Sales'
+plot(density(RocketData$Sales), 
+     main = "Density : Sales",
+     ylab = "Frequency",
+     sub=paste("Skewness :",
+               round(e1071::skewness(RocketData$Sales),
+                     2
+                     )
+               )
+     ) 
+
+polygon(density(RocketData$Sales), col = "blue")
+```
+
+
+## 5. Check the Correlation Analysis.
+```{r}
+cor(RocketData$Spend, RocketData$Sales)
+```
+
+
+## 6. Build the Linear Regression Model.
+```{r}
+LinearRegressionModel <- lm(formula = Spend ~ Sales, data = RocketData)
+LinearRegressionModel
+summary(LinearRegressionModel)
+```
+
+## 7. Using p-value Check For Statistical Significance.
+```{r}
+
+```
+
+
+## 8.Capture the summary of the linear model.
+```{r}
+ModelSummary <-summary(LinearRegressionModel)
+ModelSummary
+```
+
+
+## 9. Also perform the Linear Diagnostics for the given data set.(Hint: plot(lmmodel) )
+        
+```{r}
+plot(LinearRegressionModel)
+```
+
+
