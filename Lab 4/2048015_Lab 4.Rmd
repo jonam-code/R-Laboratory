@@ -17,7 +17,17 @@ RocketData
 summary(RocketData)
 
 ```
+*Insight 1*
 
+        -Marketing Budget is a financial dataset consisting of Spending and Sales records for one complete Fiscal Year.
+        -Sales seem to be approximately ten times of Spending by their respective month.
+
+*Insight 2*
+
+        -Annual Spending is 15000, and total market Sales turned around 158484. likely to be ten times profits in the market.
+        -September recorded as highest spending and sales.
+        -January recorded as lowest spending and sales. 
+        
 ## 2. Use Scatter Plot To Visualise The Relationship.
 ```{r}
 scatter.smooth(x = RocketData$Month, 
@@ -25,9 +35,16 @@ scatter.smooth(x = RocketData$Month,
                xlab = "Month", ylab = "Spending",  # X,Y-Lab
                main = "Spending over Month",       # Title
                col.main = "Black",                 # Title lab color
-               cex.lab = "1"                       # X,Y-axis Lab color
+               cex.lab = "1" ,                     # X,Y-axis Lab color
+               pch = 19
 )
 ```
+*Insight 1*
+
+        -The distribution is skewed, Spending is Skewed left.
+        -January (1) recorded to be the least Spending compare to all other months.
+        -September (9) recorded to be the highest Spending compare to all other months.
+
 ```{r}
 scatter.smooth(x = RocketData$Month, 
                y = RocketData$Sales, 
@@ -37,18 +54,28 @@ scatter.smooth(x = RocketData$Month,
                cex.lab = "1"                     # X,Y-axis Lab color 
 )
 ```
-
+*Insight 2*
+        
+        -The distribution is skewed, Sales is Skewed left.
+        -July, August, and November recorded to be the average in Sales compare to all other months.
 
 ## 3.Using BoxPlot To Check For Outliers.
 ```{r}
-boxplot(RocketData$Sales, main = "Sales" )
-```
-```{r}
-boxplot.default(RocketData$Spend, main = "Spending" )
-```
 
+boxplot(RocketData$Sales, main = "Sales", border = "black" )
+
+boxplot.default(RocketData$Spend, main = "Spending", border = "black")
+```
+*Insight*
+        
+        -boxplots are useful to detect potential outliers.
+        -Clear no outliers to seem to be present in both Sales and Spendings.
+        
 ## 4. Using Density Plot To Check If Response Variable Is Close To Normal.
 ```{r}
+
+# A density plot shows the distribution of a numeric variable.
+
 library(e1071)       # For skewness function
 par(mfrow = c(1,2))  # Dividing graph area in 2 columns
 
@@ -78,32 +105,56 @@ plot(density(RocketData$Sales),
 polygon(density(RocketData$Sales), col = "blue")
 ```
 
+*Insight *
+
 
 ## 5. Check the Correlation Analysis.
 ```{r}
 cor(RocketData$Spend, RocketData$Sales)
 ```
 
+*Insight *
 
+        -The correlation value is 0.998, which implies Spend and Sales having a Strong Correlation.
+        
 ## 6. Build the Linear Regression Model.
 ```{r}
 LinearRegressionModel <- lm(formula = Spend ~ Sales, data = RocketData)
 LinearRegressionModel
 summary(LinearRegressionModel)
 ```
+*Insight *
+
+        -We could see that the value of the Intercept of the model is -114.67027 and the Slope of the model is 0.09392. So, we get the complete formula of the linear model as, Sales = Slope*(Spend) - Intercept
+**Sales = 0.09392*(Spend) - 114.67027** 
 
 ## 7. Using p-value Check For Statistical Significance.
 ```{r}
-
+t.test(RocketData$Spend, RocketData$Sales,
+       paired = TRUE,
+       alternative = "two.sided"
+       )
 ```
 
+*Insight *
 
+        -
+        
 ## 8.Capture the summary of the linear model.
 ```{r}
 ModelSummary <-summary(LinearRegressionModel)
 ModelSummary
 ```
 
+*Insight *
+
+        -The COEFFICIENTS show the linear regression model's intercept and slope, and it is given by 'Sales 0.09392 * (Spend) - 114.67027'. The estimate of sales, when the spend is 0, is 9.392e-02. The standard error coefficient is 1.437e-03, which gives the approximate variations that the sales variable can have concerning the spending variable. The t-value is 65.378, which is significantly far from 0, which shows that the variables are statistically significant.
+
+        -Residual Standard Error is a measure of the quality of a linear regression fit, and here, it is calculated as 217.5 on 10 degrees of freedom.
+
+        -The R-squared (R^2) statistic provides a measure of how well the model fits the actual data.R^2 is a measure of the linear relationship between our predictor variable and our response/target variable. The value obtained is 0.9977, which shows a 99.77% fitting of the variable to the linear model.
+
+        -The F value of 4274 on 1 is relatively larger than 1; hence, we see a good relationship between sales and spend variables.
 
 ## 9. Also perform the Linear Diagnostics for the given data set.(Hint: plot(lmmodel) )
         
@@ -111,4 +162,44 @@ ModelSummary
 plot(LinearRegressionModel)
 ```
 
+## 9. Create the training and test data (70:30).
+```{r}
+set.seed(100)
+rows = sample(nrow(RocketData))
+
+# Randomly order data:
+data = RocketData[rows, ]
+
+# Identify row to split on: split
+split = round(nrow(data) * .70)
+
+# Create train
+train = data[1:split,]
+train
+# Create test
+test = data[(split + 1): nrow(data),]
+test
+```
+
+*Insight *
+
+        -We are splitting the dataset for training and testing purposes by 70:30 weightage.
+        
+## 10. Fit the model on training data and predict sales on test data.
+```{r}
+Model = lm(formula = Spend ~ Sales, data = train )
+Model
+
+Predict = predict(Model, test)
+```
+
+*Insight *
+
+        -We could see that the value of the Intercept of the model is 14.55154 and the Slope of the model is 0.09217. So, we get the complete formula of the linear model as, Sales = Slope * (Spend) - Intercept
+**Sales = 0.09217 * (Spend) - 14.55154** 
+
+## 11.Review the diagnostic measures.
+```{r}
+plot(Model)
+```
 
