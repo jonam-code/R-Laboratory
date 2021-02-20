@@ -1,0 +1,177 @@
+---
+title: "Regression Analysis"
+author: "MANOJ KUMAR - 2048015"
+date: "20/02/2021"
+output: word_document
+---
+
+
+## 1.Install the package “titanic”.
+```{r}
+# install.packages("titanic")
+```
+
+## 2.Load Titanic library to get the dataset
+```{r}
+# Load Titanic library
+library(titanic)
+```
+
+
+```{r}
+# Load the dataset
+data("titanic_train")
+data("titanic_test")
+```
+
+## 3.Set Survived column for test data to NA.
+    #Note: titanic_test$Survived <- NA
+```{r}
+## Setting Survived column for test data to NA
+titanic_test$Survived <- NA
+```
+
+## 4.Combine the  Training and Testing dataset.
+    #Note: complete_data <- rbind(titanic_train, titanic_test)
+```{r}
+complete_data <- rbind(titanic_train, titanic_test)
+```
+
+## 5.Get the data structure.
+```{r}
+# Check data structure
+str(complete_data)
+```
+
+## 6. Check for any missing values in the data.
+```{r}
+is.na(complete_data)
+```
+
+```{r}
+# Total missing count
+colSums(is.na(complete_data))
+```
+
+## 7.Check for any empty values.
+```{r}
+# Checking for Empty values
+
+colSums(complete_data=='')
+```
+
+## 8.Check number of unique values for each column to find out which column we can convert to factors.
+```{r}
+sapply(complete_data, function(x) length(unique(x)))
+```
+
+```{r}
+## Missing values imputation
+complete_data$Embarked[complete_data$Embarked==""] <- "S"
+complete_data$Age[is.na(complete_data$Age)] <- median(complete_data$Age,na.rm=T)
+```
+
+## 9.Remove Cabin as it has very high missing values, passengerId, Ticket and Name are not required.
+
+```{r}
+library(base)
+```
+
+
+```{r}
+library(stats)
+```
+
+
+```{r}
+library(dplyr)
+```
+
+
+```{r}
+titanic_data <- complete_data %>% select(-c(Cabin, PassengerId, Ticket, Name))
+```
+
+## 10.Convert "Survived","Pclass","Sex","Embarked" to factors
+```{r}
+for (i in c("Survived","Pclass","Sex","Embarked")){
+  titanic_data[,i]=as.factor(titanic_data[,i])
+}
+```
+
+```{r}
+# Create dummy variables for categorical variables
+library(dummies)
+```
+
+```{r}
+titanic_data <- dummy.data.frame(titanic_data, names=c("Pclass","Sex","Embarked"), sep="_")
+```
+
+
+## 11.Splitting training and test data.
+```{r}
+train <- titanic_data[1:667,]
+test <- titanic_data[668:889,]
+```
+
+## 12.Create a model.
+```{r}
+## Model Creation
+model <- glm(Survived ~.,family=binomial(link='logit'),data=train)
+```
+
+## 13.Visualize the model summary.
+```{r}
+# Model Summary
+summary(LogisticModel)
+```
+
+## 14.Analyse the test of deviance using anova()
+    #Note: anova(model, test="Chisq")
+```{r}
+## Using anova() to analyze the table of devaiance
+anova(model, test="Chisq")
+```
+
+```{r}
+## Predicting Test Data
+result <- predict(model,newdata=test,type='response')
+result <- ifelse(result > 0.5,1,0)
+```
+
+## 15.Compute confusion matrix and ROC curve.
+```{r}
+## Confusion matrix and statistics
+library(ggplot2) 
+```
+```{r}
+library(lattice)
+```
+```{r}
+library(caret)
+```
+
+```{r}
+confusionMatrix(data=result, reference=test$Survived)
+```
+
+```{r}
+## ROC Curve and calculating the area under the curve(AUC)
+library(ROCR)
+```
+
+
+```{r}
+predictions <- predict(model, newdata=test, type="response")
+ROCRpred <- prediction(predictions, test$Survived)
+ROCRperf <- performance(ROCRpred, measure = "tpr", x.measure = "fpr")
+
+plot(ROCRperf, colorize = TRUE, text.adj = c(-0.2,1.7), print.cutoffs.at = seq(0,1,0.1))
+```
+```{r}
+auc <- performance(ROCRpred, measure = "auc")
+auc <- auc@y.values[[1]]
+auc
+```
+
