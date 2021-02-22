@@ -1,10 +1,9 @@
 ---
-title: "Regression Analysis"
+title: "R-Laboratory 5"
 author: "MANOJ KUMAR - 2048015"
 date: "20/02/2021"
 output: word_document
 ---
-
 
 ## 1.Install the package “titanic”.
 ```{r}
@@ -44,6 +43,10 @@ str(complete_data)
 
 ## 6. Check for any missing values in the data.
 ```{r}
+is.na(complete_data)
+```
+
+```{r}
 # Total missing count
 colSums(is.na(complete_data))
 ```
@@ -60,11 +63,15 @@ is.null(complete_data)
 
 ## 8.Check number of unique values for each column to find out which column we can convert to factors.
 ```{r}
+?apply
+```
+
+```{r}
 apply(complete_data,2,function(x) length(unique(x)))
 ```
 
 ```{r}
-# sapply() function takes list, vector or data frame as input and gives output in vector or matrix. 
+# apply() and sapply() function takes list, vector or data frame as input and gives output in vector or matrix. 
 # It is useful for operations on list objects and returns a list object of same length of original set.
 
 sapply(complete_data, function(x) length(unique(x)))
@@ -75,6 +82,10 @@ sapply(complete_data, function(x) length(unique(x)))
 ```{r}
 # To remove a column from an R data frame
 
+# case 1
+# refined_data <- complete_data %>% select(-c(Cabin, PassengerId, Ticket, Name))
+
+# case 2
 refined_data <- subset (complete_data, select = -c(Cabin, PassengerId, Ticket, Name))
 head(refined_data)
 ```
@@ -111,11 +122,15 @@ library("mice")
 ```
 
 ```{r}
+# missing data pattern
+
 md.pattern(df)
 ```
 
 ```{r}
-imputed_data<-mice(df,method = 'pmm',seed=50)
+# predictive mean matching
+
+imputed_data<-mice(df, method = 'pmm', seed=50)
 ```
 ```{r}
 summary(imputed_data)
@@ -125,8 +140,11 @@ imputed_final<-complete(imputed_data)
 summary(imputed_final)
 ```
 ```{r}
+# Random number generator
+
 set.seed(42)
 
+#sample(x, size, replace = FALSE, prob = NULL)
 train_pts<-sample(1:nrow(imputed_final),0.75*nrow(imputed_final))
 
 train_dataset <-imputed_final[train_pts,]
@@ -188,7 +206,7 @@ pred_num <- ifelse(data > 0.5, 1, 0)
 pred_data <- factor(pred_num, levels = c(0, 1))
 actual_data <- test_dataset$Survived
 
-confusionMatrix( data = actual_data, reference = actual_data)
+confusionMatrix( data = pred_data, reference = actual_data)
 ```
 
 ```{r}
