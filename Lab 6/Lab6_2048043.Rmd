@@ -1,0 +1,164 @@
+---
+title: "RLab6 - Demonstrate the use of Ridge Regression"
+author: "Mayuri Salecha -2048043"
+date: "26 February 2021"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Question 1
+```{r}
+#Load mtcars dataset
+data(mtcars)
+head(mtcars)
+```
+
+#Question 2
+```{r}
+#Install ridge and glmnet packages
+#install.packages("ridge")
+#install.packages("glmnet")
+library(ridge)
+library(glmnet)
+```
+
+#Question 3
+```{r}
+#Perform the exploratory data analysis
+
+#Preprocessing
+df = mtcars
+str(df)
+summary(df)
+
+#Checking for missing values.
+colSums(is.na(df))
+
+#Checking for Empty Values
+colSums(df=='')
+
+#Checking for Duplicate values
+library(tidyverse)
+duplicated(df)
+```
+
+## The dataset is clean, there are no missing, null or duplicate values.
+
+```{r}
+#Exploratory Data Analysis
+
+#Checking Normality of Response Variable
+
+library(e1071)
+plot(density(df$mpg), main = "Milage Density Plot", ylab="Frequency",  sub=paste("Skewness",round(e1071::skewness(df$mpg),2)))
+polygon(density(df$mpg), col='#FFC9A9')
+
+#Slightly Right Skweked, which implies most of the values are posititve in nature. 
+
+#Correlation Heat Map
+library(ggplot2)
+library(reshape2)
+
+cormat <- round(cor(df),2)
+melted_cormat <- melt(cormat)
+ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()
+
+#It is evident that most of the variables possess a high correlation with each other, thus we can assume multicollinearity is present.
+
+```
+
+
+
+```{r}
+#Checking for Outliers in highly positive correlated values with Milage
+par(mfrow=c(2,2))
+boxplot(df$drat, main = "Rear axle ratio")
+boxplot(df$qsec, main = "1/4 mile time")
+boxplot(df$gear, main = "Number of Forward Gears")
+
+```
+#Computing a regular Model
+```{r}
+#Building initial model
+X = model.matrix(mpg~. , mtcars)[,-1]
+Y = mtcars$mpg
+
+#Splitting the data
+set.seed(57)
+
+trainingRow <- sample(1:nrow(df), 0.7*nrow(df))
+trainset <- df[trainingRow,]
+testset <- df[-trainingRow,]
+
+lrm <- lm(trainset$mpg~.,data=trainset)
+
+summary(lrm)
+
+library(car)
+
+vif(lrm)
+#All the values are above 5, there is strong multicollinearity present.
+
+MLR_pred <- predict(lrm,testset)
+compare <- cbind(actual=testset$mpg,MLR_pred)
+compare
+
+mean (apply(compare, 1, min)/apply(compare, 1, max))
+
+RMSE = sqrt(mean((testset$mpg-MLR_pred)^2))
+RMSE# calculate accuracy
+
+#Accuracy is only 81%, which is not verry efficient.
+```
+
+
+#Question 4 & 5
+```{r}
+#Choose optimum lamba value and Extract the model using k-cross validation.
+
+#Creating a sequence with an interval of -0.12
+lambda_seq = 10^seq(3, -3, by = -.12)
+
+ridge_model1 = cv.glmnet(X[trainingRow,], Y[trainingRow],alpha = 0, type.measure = "mse", lambda = lambda_seq, nfolds = 5)
+
+plot(ridge_model1)
+
+#The minima of the graph os the optimum lambda value.
+
+best_lam =  ridge_model1$lambda.min
+best_lam
+
+```
+
+#Question 6
+```{r}
+#Build the final model and interpret
+
+#Fitting a Regression model with optimum lambda value.
+linRidgeMod = linearRidge(trainset$mpg ~ ., data = trainset)
+predicted = predict(linRidgeMod, testset) # predict on test data
+compare1 = cbind (actual=testset$mpg, predicted)
+mean (apply(compare1, 1, min)/apply(compare1, 1, max))
+
+summary(linRidgeMod)
+```
+```{r}
+#Creating another model with only signifiant values.
+
+linRidgeMod = linearRidge(trainset$mpg ~ ., data = trainset[, c(6,10,11)])
+predicted1 = predict(linRidgeMod, testset) # predict on test data
+compare2 = cbind (actual=testset$mpg, predicted1)
+mean (apply(compare2, 1, min)/apply(compare2, 1, max))
+
+summary(linRidgeMod)
+#The accuracy has increased from 75% to 88%.
+
+RMSE = sqrt(mean((testset$mpg-predicted1)^2))
+RMSE
+#RMSE has decreased too.
+```
+

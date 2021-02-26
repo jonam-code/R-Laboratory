@@ -1,0 +1,247 @@
+---
+title: "R-Laboratory 6"
+author: "MANOJ KUMAR - 2048015"
+date: "26/02/2021"
+output: word_document
+---
+
+## 1.Load mtcars dataset.
+
+```{r}
+# Loading mtcars dataset.
+data(mtcars)
+mtcars
+```
+
+## 2.install ridge and glmnet packages.
+
+```{r}
+#install.packages(ridge)
+#install.packages(glmnet)
+```
+```{r}
+library(ridge)      # Linear and logistic ridge regression functions.
+library(Matrix)
+library(glmnet)     # Lasso and Elastic-Net Regularized Generalized Linear Models
+```
+
+## 3.Perform the exploratory data analysis.
+
+```{r}
+# Pre-processing EDA
+df = mtcars
+
+str(df)
+```
+
+*Insight *
+
+        - Totally, 32 observations of  11 variables.
+        - All the 11 features are numerical datatypes. 
+
+```{r}
+# Summary
+
+summary(df)
+```
+
+
+```{r}
+# Checking for missing values.
+
+colSums(is.na(df))
+```
+
+
+```{r}
+#Checking for Empty Values
+
+colSums(df=='')
+```
+
+```{r}
+#Checking for Duplicate values
+
+library(tidyverse)
+```
+```{r}
+duplicated(df)
+```
+
+
+*Insight *
+
+        - The dataset is clean, there are no missing, Empty values or duplicated record.
+
+```{r}
+# Checking Normality of Response Variable
+
+# Using this method, we obtain predictions from the model, as well as decision values from the binary classifiers.
+library(e1071)
+
+
+# plot() – Visualizing data, support vectors and decision boundaries, if provided.
+plot(density(df$mpg), 
+     main = "Milage Density Plot", 
+     ylab="Frequency",  
+     sub=paste("Skewness",round(e1071::skewness(df$mpg),2))
+     )
+
+polygon(density(df$mpg), col='#079992')
+```
+
+*Insight *
+
+        - Slightly Right Skweked, which implies most of the values are posititve in nature. 
+
+```{r}
+#Correlation Heatmap
+
+library(ggplot2)
+library(reshape2)
+```
+
+
+```{r}
+cormat <- round(cor(df),2)
+melted_cormat <- melt(cormat)
+ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()
+```
+
+*Insight *
+
+        - Darker shades denotes less correlationship indications.
+        - Lighter shades denotes High correlationship with each variables.
+        - It is evident that most of the variables possess a high correlation with each other, thus we can assume multicollinearity is present.
+
+```{r}
+#Checking for outliers in highly positive correlated values with Mileage
+
+par(mfrow=c(2,3))
+
+boxplot(df$drat, main = "Rear axle ratio")
+boxplot(df$qsec, main = "1/4 mile time")
+boxplot(df$gear, main = "Number of Forward Gears")
+boxplot(df$hp,   main = "Gross horsepower")
+boxplot(df$cyl, main = "Number of cylinders")
+boxplot(df$disp,   main = "Displacement (cu.in.)")
+
+```
+
+*Insight *
+
+        - There is an outlier found in qsec(1/4 mile time) and Gross horsepower.
+
+```{r}
+#Building initial model
+X = model.matrix(mpg~. , mtcars)[,-1]
+Y = mtcars$mpg
+
+#Splitting the data
+set.seed(57)
+
+trainingRow <- sample(1:nrow(df), 0.7*nrow(df))
+trainset <- df[trainingRow,]
+testset <- df[-trainingRow,]
+
+lrm <- lm(trainset$mpg~., data=trainset)
+
+summary(lrm)
+
+```
+
+
+```{r}
+library(car)
+
+vif(lrm)
+```
+
+
+*Insight *
+
+        - All the values are above 5, there is strong multi-collinearity present.
+      
+```{r}
+MLR_pred <- predict(lrm,testset)
+compare <- cbind(actual=testset$mpg, MLR_pred)
+compare
+```
+
+```{r}
+mean (apply(compare, 1, min)/apply(compare, 1, max))
+```
+
+```{r}
+RMSE = sqrt(mean((testset$mpg-MLR_pred)^2))
+RMSE# calculate accuracy
+
+```
+
+*Insight *
+
+        - Accuracy is only 81%, which is not very efficient.
+
+## 4.Choose optimum lamba value.
+
+```{r}
+#Creating a sequence with an interval of -0.12
+lambda_seq = 10^seq(3, -2, by = -.12)
+
+# Using cross validation glmnet
+ridge_model1 = cv.glmnet(X[trainingRow,], Y[trainingRow],alpha = 0, type.measure = "mse", lambda = lambda_seq, nfolds = 5)
+
+# Best lambda value
+best_lam =  ridge_model1$lambda.min
+best_lam
+```
+
+```{r}
+plot(ridge_model1)
+```
+
+*Insight *
+
+        - Optimum lamba value choosed and plotted.
+        
+## 5.Extract the model using k-cross validation.
+
+```{r}
+best_fit <- ridge_model1$glmnet.fit
+head(best_fit)
+```
+
+## 6.Build the final model and interpret.
+
+```{r}
+linRidgeMod = linearRidge(trainset$mpg ~ ., data = trainset)
+predicted = predict(linRidgeMod, testset) # predict on test data
+compare1 = cbind (actual=testset$mpg, predicted)
+
+mean (apply(compare1, 1, min)/apply(compare1, 1, max))
+
+summary(linRidgeMod)
+```
+
+*Creating another model with only significant values.*
+
+```{r}
+linRidgeMod = linearRidge(trainset$mpg ~ ., data = trainset[, c(6,10,11)])
+predicted1 = predict(linRidgeMod, testset) # predict on test data
+compare2 = cbind (actual=testset$mpg, predicted1)
+
+mean (apply(compare2, 1, min)/apply(compare2, 1, max))
+
+summary(linRidgeMod)
+
+RMSE = sqrt(mean((testset$mpg-predicted1)^2))
+RMSE
+```
+
+*Insight *
+
+        - The accuracy has increased from 75% to 88%.
+        - Root-Mean-Square Error has decreased from 3.242 to 1.389
+
+
