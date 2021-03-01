@@ -13,6 +13,11 @@ data(mtcars)
 mtcars
 ```
 
+*Insight *
+
+        - mtcars dataset contains 32 obs. of  11 variables.
+        - Notably all the variables are Numerical.
+        
 ## 2.install ridge and glmnet packages.
 
 ```{r}
@@ -21,7 +26,15 @@ mtcars
 ```
 ```{r}
 library(ridge)      # Linear and logistic ridge regression functions.
+```
+
+
+```{r}
 library(Matrix)
+```
+
+
+```{r}
 library(glmnet)     # Lasso and Elastic-Net Regularized Generalized Linear Models
 ```
 
@@ -45,13 +58,18 @@ str(df)
 summary(df)
 ```
 
+*Insight *
+
+        - Minimum gear level is 3 and maximum gear level is 5
+        - Minimum cylinders capacity is 4 and maximum capacity is 8
+        - Minimum horsepower is 52 and maximum value is 335
+        - Number of carburetors minimum is 1 and maximum of 8
 
 ```{r}
 # Checking for missing values.
 
 colSums(is.na(df))
 ```
-
 
 ```{r}
 #Checking for Empty Values
@@ -65,7 +83,7 @@ colSums(df=='')
 library(tidyverse)
 ```
 ```{r}
-duplicated(df)
+duplicated(df)    # Row
 ```
 
 
@@ -79,10 +97,9 @@ duplicated(df)
 # Using this method, we obtain predictions from the model, as well as decision values from the binary classifiers.
 library(e1071)
 
-
 # plot() – Visualizing data, support vectors and decision boundaries, if provided.
 plot(density(df$mpg), 
-     main = "Milage Density Plot", 
+     main = "Millage Density Plot", 
      ylab="Frequency",  
      sub=paste("Skewness",round(e1071::skewness(df$mpg),2))
      )
@@ -92,13 +109,23 @@ polygon(density(df$mpg), col='#079992')
 
 *Insight *
 
-        - Slightly Right Skweked, which implies most of the values are posititve in nature. 
+        - Slightly Right Skewked, which implies most of the values are positive in nature.
+        - Mode > Median > Mean values 
+        - Skewness  value is > 0, so data values are less than mean
+        - This chart is a variation of a Histogram that uses kernel smoothing to plot values, allowing for smoother distributions by smoothing out the noise.
+
 
 ```{r}
 #Correlation Heatmap
 
-library(ggplot2)
-library(reshape2)
+library(ggplot2)        # Makes it simple to create complex plots from data in a data frame.
+```
+
+
+```{r}
+library(reshape2)       
+# Long- to wide-format data: the cast functions  
+# Wide- to long-format data: the melt function
 ```
 
 
@@ -114,6 +141,7 @@ ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) +
         - Darker shades denotes less correlationship indications.
         - Lighter shades denotes High correlationship with each variables.
         - It is evident that most of the variables possess a high correlation with each other, thus we can assume multicollinearity is present.
+        - We need to checking for outliers in highly positive correlated values.
 
 ```{r}
 #Checking for outliers in highly positive correlated values with Mileage
@@ -124,46 +152,55 @@ boxplot(df$drat, main = "Rear axle ratio")
 boxplot(df$qsec, main = "1/4 mile time")
 boxplot(df$gear, main = "Number of Forward Gears")
 boxplot(df$hp,   main = "Gross horsepower")
-boxplot(df$cyl, main = "Number of cylinders")
+boxplot(df$wt, main = "Weight (lb/1000)")
 boxplot(df$disp,   main = "Displacement (cu.in.)")
 
 ```
 
 *Insight *
 
-        - There is an outlier found in qsec(1/4 mile time) and Gross horsepower.
+        - Clearly there is an outlier found in qsec(1/4 mile time).
+        - Also, there is an outlier found in Gross horsepower.
+        - Clearly huge outlier were found in Weight (lb/1000).
+
 
 ```{r}
-#Building initial model
-X = model.matrix(mpg~. , mtcars)[,-1]
-Y = mtcars$mpg
+# Splitting the data
+set.seed(57)   # Starting number used to generate a sequence of random numbers  
 
-#Splitting the data
-set.seed(57)
-
+# sample() allows you to take a random sample of elements from a dataset or a vector, either with or without replacement.
 trainingRow <- sample(1:nrow(df), 0.7*nrow(df))
+
 trainset <- df[trainingRow,]
 testset <- df[-trainingRow,]
 
 lrm <- lm(trainset$mpg~., data=trainset)
 
 summary(lrm)
-
 ```
+*Insight *
+
+        - Sequence of random numbers is seeded and taken a random sample of elements from a dataset for the trainset and testset.
+        - Linear regression model is created using the trainset.
+        - Estimate, S.D, t-value, Residuals information are summarize from created model.
+        - Residual standard error: 3.006 on 11 degrees of freedom
+        - RSE measures the average of the squares of the errors. Lower values (closer to zero) indicate better fit.
 
 
 ```{r}
-library(car)
-
+# Variance Inflation Factor 
 vif(lrm)
 ```
 
 
 *Insight *
-
-        - All the values are above 5, there is strong multi-collinearity present.
+        
+        - VIF measures how much the variance of a regression coefficient is inflated due to multicollinearity in the model.
+        - Most of the values are above 5, there is strong multi-collinearity present.
+        - Between 5 to 10 multicollinearity and we should remove those features.
       
 ```{r}
+# Multi linear reg 
 MLR_pred <- predict(lrm,testset)
 compare <- cbind(actual=testset$mpg, MLR_pred)
 compare
@@ -176,14 +213,20 @@ mean (apply(compare, 1, min)/apply(compare, 1, max))
 ```{r}
 RMSE = sqrt(mean((testset$mpg-MLR_pred)^2))
 RMSE# calculate accuracy
-
 ```
 
 *Insight *
 
-        - Accuracy is only 81%, which is not very efficient.
+        - Accuracy is only 86%, which is not very efficient.
 
 ## 4.Choose optimum lamba value.
+
+```{r}
+#Building initial model
+X = model.matrix(mpg~. , mtcars)[,-1]   # Matrix with Response variables or Dependent variable with others mpg~.
+Y = mtcars$mpg
+```
+
 
 ```{r}
 #Creating a sequence with an interval of -0.12
@@ -203,7 +246,8 @@ plot(ridge_model1)
 
 *Insight *
 
-        - Optimum lamba value choosed and plotted.
+        - Optimum lamba value choosed and plotted. (lambda_seq and 2.290868)
+        - nfolds = 5 Cross validation
         
 ## 5.Extract the model using k-cross validation.
 
@@ -212,14 +256,24 @@ best_fit <- ridge_model1$glmnet.fit
 head(best_fit)
 ```
 
+*Insight *
+
+        - Cross validation fit explained
+
 ## 6.Build the final model and interpret.
 
 ```{r}
+
+# linearRidge
+
 linRidgeMod = linearRidge(trainset$mpg ~ ., data = trainset)
 predicted = predict(linRidgeMod, testset) # predict on test data
 compare1 = cbind (actual=testset$mpg, predicted)
 
 mean (apply(compare1, 1, min)/apply(compare1, 1, max))
+
+RMSE = sqrt(mean((testset$mpg-predicted)^2))
+RMSE
 
 summary(linRidgeMod)
 ```
@@ -227,13 +281,15 @@ summary(linRidgeMod)
 *Creating another model with only significant values.*
 
 ```{r}
+# wt, gear, crab
+
 linRidgeMod = linearRidge(trainset$mpg ~ ., data = trainset[, c(6,10,11)])
 predicted1 = predict(linRidgeMod, testset) # predict on test data
 compare2 = cbind (actual=testset$mpg, predicted1)
 
-mean (apply(compare2, 1, min)/apply(compare2, 1, max))
-
 summary(linRidgeMod)
+
+mean (apply(compare2, 1, min)/apply(compare2, 1, max))
 
 RMSE = sqrt(mean((testset$mpg-predicted1)^2))
 RMSE
@@ -241,7 +297,7 @@ RMSE
 
 *Insight *
 
-        - The accuracy has increased from 75% to 88%.
+        - The accuracy has increased from 85% to 94%.
         - Root-Mean-Square Error has decreased from 3.242 to 1.389
 
 
