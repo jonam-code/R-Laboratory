@@ -1,0 +1,143 @@
+---
+title: "R-Laboratory 7"
+author: "MANOJ KUMAR - 2048015"
+date: "12/03/2021"
+output: word_document
+---
+
+### 1.Download the dataset BOSTON.csv
+
+```{r}
+# Loading BOSTON dataset.
+dataset <- read.csv("boston.csv")
+head(dataset)
+```
+    
+    - LON and LAT are the longitude and latitude of the center of the census tract.
+    - MEDV is the median value of owner-occupied homes, measured in thousands of dollars.
+    - CRIM is the per capita crime rate.
+    - ZN is related to how much of the land is zoned for large residential properties.
+    - INDUS is the proportion of the area used for industry.
+    - CHAS is 1 if a census tract is next to the Charles River else 0 
+    - NOX is the concentration of nitrous oxides in the air, a measure of air pollution.
+    - RM is the average number of rooms per dwelling.
+    - AGE is the proportion of owner-occupied units built before 1940.
+    - DIS is a measure of how far the tract is from centres of employment in Boston.
+    - RAD is a measure of closeness to important highways.
+    - TAX is the property tax per $10,000 of value.
+    - PTRATIO is the pupil to teacher ratio by town
+
+```{r}
+str(dataset)
+```
+
+```{r}
+summary(dataset)
+```
+
+### 2.MEDV is the output /target variable i.e price of the house to be predicted.
+
+```{r}
+par(mfrow=c(2,3))
+
+plot(dataset$LON, dataset$MEDV, main = "Longitude", xlab="", ylab="", cex.lab="1.5", col="#1e3799", pch=20, cex= 0.5 ) 
+plot(dataset$LAT, dataset$MEDV, main = "Latitude", xlab="", ylab="", cex.lab="1.5", col="#628ca6", pch=20, cex= 0.5)
+plot(dataset$CRIM, dataset$MEDV, main = "Crime Rate", xlab="", ylab="", cex.lab="1.5", col="#e58e26", pch=20, cex= 0.5)
+plot(dataset$ZN, dataset$MEDV, main = "Residential Zone", xlab="", ylab="", cex.lab="1.5", col="#628ca6", pch=20, cex= 0.5)
+plot(dataset$INDUS, dataset$MEDV, main = "Industry Area", xlab="", ylab="", cex.lab="1.5", col="#e58e26", pch=20, cex= 0.5)
+plot(dataset$TAX, dataset$MEDV, main = "Tax per $10,000", xlab="", ylab="", cex.lab="1.5", col="#1e3799", pch=20, cex= 0.5)
+```
+```{r}
+par(mfrow=c(2,3))
+
+plot(dataset$NOX, dataset$MEDV, main = "Nitrous Oxides", xlab="", ylab="", cex.lab="1.5", col="#84817a", pch=20, cex= 0.5 ) 
+plot(dataset$RM, dataset$MEDV, main = "Number of Rooms", xlab="", ylab="", cex.lab="1.5", col="#cd6133", pch=20, cex= 0.5 ) 
+plot(dataset$CRIM, dataset$MEDV, main = "Crime Rate", xlab="", ylab="", cex.lab="1.5", col="#b33939", pch=20, cex= 0.5 ) 
+plot(dataset$AGE, dataset$MEDV, main = "Built before 1940 (Age)", xlab="", ylab="", cex.lab="1.5", col="#b33939", pch=20, cex= 0.5 ) 
+plot(dataset$DIS, dataset$MEDV, main = "Employment", xlab="", ylab="", cex.lab="1.5", col="#cd6133", pch=20, cex= 0.5 ) 
+plot(dataset$RAD, dataset$MEDV, main = "Highways", xlab="", ylab="", cex.lab="1.5", col="#84817a", pch=20, cex= 0.5 ) 
+```
+
+
+### 3. Using the plot commands, plot the latitude and longitude of each of our census tracts.
+### 4. Show all the points that lie along the Charles River in a blue colour.
+```{r}
+# https://colorhunt.co/
+
+plot(dataset$LON, dataset$LAT, main = "Charles River in a blue colour",  xlab="Longitude", ylab="Latitude", col="#bbbbbb", pch=20, cex= 0.7)
+points(dataset$LON[dataset$CHAS==1], dataset$LAT[dataset$CHAS==1], col="#005fba", pch=16)
+```
+
+
+### 5.Apply Linear Regression by plotting the relationship between latitude and house prices and the longitude and the house prices.
+```{r}
+library(plotly)
+fig <- plot_ly(data = dataset, x = ~dataset$LAT, y = ~dataset$MEDV, marker = list(size = 10,color = '#ffa500'))
+fig <- fig %>% layout(title = 'Latitude', yaxis = list(title = "Price in $", zeroline = TRUE),xaxis = list(title = "", zeroline = TRUE))
+
+fig
+```
+
+
+```{r}
+fig <- plot_ly(data = dataset, x = ~dataset$LON, y = ~dataset$MEDV, marker = list(size = 10,color = '#005AFF'))
+fig <- fig %>% layout(title = 'Longitude', yaxis = list(title = "Price in $", zeroline = TRUE),xaxis = list(title = "", zeroline = TRUE))
+
+fig
+```
+
+```{r}
+#linear model
+linear_model = lm(MEDV ~ LAT + LON, data=dataset)
+summary(linear_model)
+```
+```{r}
+#linear model
+LAT_model = lm(MEDV ~ LAT, data=dataset)
+summary(LAT_model)
+```
+
+```{r}
+#linear model
+LON_model = lm(MEDV ~ LON, data=dataset)
+summary(LON_model)
+```
+
+### 6.Apply Regression Tree to the problem and draw conclusions from it.
+```{r}
+library(rpart)
+library(rpart.plot)
+```
+
+```{r}
+set.seed(52)
+df<-sample(1:nrow(dataset),0.70*nrow(dataset)) 
+train<-dataset[df,]
+test<-dataset[-df,]
+```
+
+
+```{r}
+tree = rpart(MEDV ~ LAT + LON + CRIM + ZN + INDUS + CHAS + NOX + RM + AGE + DIS + RAD + TAX + PTRATIO, data=train)
+summary(tree)
+```
+
+```{r}
+prp(tree)
+```
+
+```{r}
+library(Metrics)
+```
+
+
+```{r}
+pred_test <-predict(tree,test)
+actual_test <-test$MEDV
+rmse(actual_test,pred_test)
+
+pred_train <-predict(tree)
+actual_train <-train$MEDV
+rmse(actual_train,pred_train)
+```
+
