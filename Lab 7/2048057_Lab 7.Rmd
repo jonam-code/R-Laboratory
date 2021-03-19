@@ -1,16 +1,17 @@
 ---
-title: "MANOJ KUMAR - 2048015"
-author: "R-Laboratory 7"
+title: "LAB7 REGRESSION TREE"
+author: "SOUNDARYA G - 2048057"
 date: "12/03/2021"
 output:
   html_document:
     df_print: paged
 ---
 
-### 1.Download the dataset BOSTON.csv
+### QUESTION 1.Download the dataset BOSTON.csv
 
 ```{r}
 # Loading BOSTON dataset.
+
 dataset <- read.csv("boston.csv")
 head(dataset)
 ```
@@ -30,32 +31,79 @@ head(dataset)
     - PTRATIO is the pupil to teacher ratio by town
 
 ```{r}
+# structure of dataset
 str(dataset)
 ```
 
+**OBSERVARTION:**
+     1.Character- TOWN
+     2.Integer- TRACT,CHAS,RAD,TAX
+     3.Numeric- LON,LAT,MEDV,CRIM,ZN,INDUS,NOX,RM,AGE,DIS,PTRATIO
+     4.Number of columns:16
+     5.Number of observation:506
+     
 ```{r}
+# Summary of dataset
 summary(dataset)
 ```
+
+**OBSERVARTION:**
+        The house price ranges between 5000 and 50000 dollars.
+        The Longitude and Latitude lies on -71 and 42 coordinate points respectively in Boston.
+        
 ```{r}
-# Checking for missing values.
+# Checking for NA values.
 colSums(is.na(dataset))
 ```
+
 ```{r}
+# Checking for Empty values.
 colSums(dataset=='')
 ```
 
-*Insight *
-    
-      -Character   - TOWN                             
-      -Integer     - TRACT,CHAS,RAD,TAX                         
-      -Numeric     - LON,LAT,MEDV,CRIM,ZN,INDUS,NOX,RM,AGE,DIS,PTRATIO               
-      -Number of columns:16 5.Number of observation:506 
-      
-      -The house price ranges between 5000 and 50000 dollars. 
-      -The Longitude and Latitude lies on -71 and 42 coordinate points respectively in Boston.
-      
+**OBSERVARTION:**
+        There is no presence NA and empty values in Boston dataset.
+        
+```{r}
+# Checking for outliers if any
+j=c(3,4)
+for (i in j)
+{
+x=dataset[,i]
+boxplot(x,col='grey',
+     xlab=colnames(dataset[i]),
+     main=colnames(dataset[i]))
+}
+```
 
-### 2.MEDV is the output /target variable i.e price of the house to be predicted.
+```{r}
+# Removing outliers
+outliers <- boxplot(dataset$LON, plot=FALSE)$out 
+print(outliers)
+
+outliers1 <- boxplot(dataset$LAT, plot=FALSE)$out 
+print(outliers1)
+```
+
+```{r}
+# Outliers spotted in dataset
+dataset[which(dataset$LON %in% outliers),]
+dataset <- dataset[-which(dataset$LON %in% outliers),]
+```
+
+```{r}
+dataset[which(dataset$LAT %in% outliers1),]
+dataset <- dataset[-which(dataset$LAT %in% outliers1),]
+```
+
+**OBSERVARTION:**
+        Outliers are spotted out using boxplot. Here we notice that longitude and latitude values have outliers. So the outliers are firstly spotted and removed from the dataset.  
+
+### QUESTION 2.MEDV is the output /target variable i.e price of the house to be predicted.
+
+```{r}
+summary(dataset$MEDV)
+```
 
 ```{r}
 par(mfrow=c(2,3))
@@ -77,50 +125,20 @@ plot(dataset$AGE, dataset$MEDV, main = "Built before 1940 (Age)", xlab="", ylab=
 plot(dataset$DIS, dataset$MEDV, main = "Employment", xlab="", ylab="", cex.lab="1.5", col="#cd6133", pch=20, cex= 0.5 ) 
 plot(dataset$RAD, dataset$MEDV, main = "Highways", xlab="", ylab="", cex.lab="1.5", col="#84817a", pch=20, cex= 0.5 ) 
 ```
-*Insight *
-    
-      -There is an observation that when house prices go down there is a significant increase in crime rate. 
-      -There is presence of nitous oxide in air which cause air pollution.And its normally distributed in all range of house price regions.
-      -There is higher probability of employment opportunity when the housing price significantly increases.
-      
 
+**OBSERVATIONS:**
+       1.There is an observation that when house prices go down there is a significant increase in crime rate.
+       2.There is presence of nitous oxide in air which cause air pollution.And its normally distributed in all range of house price regions.
+       3.There is higher probability of employment opportunity when the housing price significantly increases.
+
+
+### QUESTION 3. Using the plot commands, plot the latitude and longitude of each of our census tracts.
 ```{r}
-par(mfrow=c(1,2))
-
-boxplot(dataset$LON, main = "Longitude") 
-boxplot(dataset$LAT, main = "Latitude")
+plot(dataset$LON, dataset$LAT, main = "Longitude and Latitude of census tracts",  xlab="Longitude", ylab="Latitude", col="#bbbbbb", pch=20, cex= 1.0)
 ```
-```{r}
-outliers <- boxplot(dataset$LON, plot=FALSE)$out
-dataset[which(dataset$LON %in% outliers),]
-dataset <- dataset[-which(dataset$LON %in% outliers),]
-```
-```{r}
-outliers <- boxplot(dataset$LAT, plot=FALSE)$out
-dataset[which(dataset$LAT %in% outliers),]
-dataset <- dataset[-which(dataset$LAT %in% outliers),]
-```
-```{r}
-par(mfrow=c(1,2))
-
-boxplot(dataset$LON, main = "Longitude") 
-boxplot(dataset$LAT, main = "Latitude")
-```
-
-*Insight *
-
-      -Outliers are spotted out using boxplot. Here we notice that longitude values have outlier where as latitude doesnt have. So the outliers are firstly spotted and removed from the dataset.
-      
-
-### 3. Using the plot commands, plot the latitude and longitude of each of our census tracts.
-
 ```{r}
 library(plotly)
-```
-
-
-```{r}
-df = dataset 
+df <- read.csv('boston.csv')
 
 # geo styling
 g <- list(
@@ -145,26 +163,27 @@ fig <- fig %>% layout(title = 'Longitude and Latitude of census tracts<br />(Bos
 fig
 ```
 
+**OBSERVATIONS:**
+           It shows that there is no linearity and moderate relationship between latitude&longitude over house locations.
+           
+           
 
-### 4. Show all the points that lie along the Charles River in a blue colour.
+### QUESTION 4. Show all the points that lie along the Charles River in a blue colour.
 ```{r}
 # https://colorhunt.co/
 
-plot(dataset$LON, dataset$LAT, main = "Charles River in a blue colour",  xlab="Longitude", ylab="Latitude", col="#bbbbbb", pch=20, cex= 0.7)
+plot(dataset$LON, dataset$LAT, main = "Charles River in a blue colour",  xlab="Longitude", ylab="Latitude", col="#bbbbbb", pch=20, cex= 1)
 points(dataset$LON[dataset$CHAS==1], dataset$LAT[dataset$CHAS==1], col="#005fba", pch=16)
 ```
 
-*Insight *
+**OBSERVATIONS:**
+           Blue colored highlighted house locations were generally lies along the Charles River.
 
-      -It shows that there is no linearity and moderate relationship between latitude&longitude over house locations.
-      -Blue colored highlighted house locations were generally lies along the Charles River.
-      
-
-### 5.Apply Linear Regression by plotting the relationship between latitude and house prices and the longitude and the house prices.
+### QUESTION 5.Apply Linear Regression by plotting the relationship between latitude and house prices and the longitude and the house prices.
 ```{r}
 library(plotly)
-fig <- plot_ly(data = dataset, x = ~dataset$LAT, y = ~dataset$MEDV, marker = list(size = 10,color = '#ffa500'))
-fig <- fig %>% layout(title = 'RELATIONSHIP LATITUDE AND HOUSE PRICE', yaxis = list(title = "Price in $", zeroline = TRUE),xaxis = list(title = "", zeroline = TRUE))
+fig <- plot_ly(data = dataset, x = ~dataset$LAT, y = ~dataset$MEDV, marker = list(size = 10,color = '#822659'))
+fig <- fig %>% layout(title = 'RELATIONSHIP LATITUDE AND HOUSE PRICE',yaxis = list(title = "House Price",zeroline = TRUE),xaxis = list(title = "Latitude",zeroline = TRUE))
 
 fig
 ```
@@ -172,15 +191,14 @@ fig
 
 ```{r}
 fig <- plot_ly(data = dataset, x = ~dataset$LON, y = ~dataset$MEDV, marker = list(size = 10,color = '#005AFF'))
-fig <- fig %>% layout(title = 'RELATIONSHIP LONGITUDE AND HOUSE PRICE', yaxis = list(title = "Price in $", zeroline = TRUE),xaxis = list(title = "", zeroline = TRUE))
+fig <- fig %>% layout(title = 'RELATIONSHIP LONGITUDE AND HOUSE PRICE ',yaxis = list(title = "House Price",zeroline = TRUE),xaxis = list(title = "Longitude",zeroline = TRUE))
 
 fig
 ```
 
-**Insights:**
-
-           -Above scatter plot shows that they are randomly distributed and looks like there is no relationship between them.
-
+**OBSERVATIONS:**
+           Above scatter plot shows that they are randomly distributed and looks like there is no relationship between them.
+           
 ```{r}
 set.seed(35)
 spts<-sample(1:nrow(dataset),0.7*nrow(dataset))#70% Training Data
@@ -188,14 +206,14 @@ train<-dataset[spts,]
 test<-dataset[-spts,]
 ```
 
+
 ```{r}
 #linear model
 linear_model = lm(MEDV ~ LAT + LON, data=dataset)
 summary(linear_model)
 ```
 
-*Insight *
-
+**OBSERVATIONS:**
         - The estimated regression model is:
           Housing prices =  -5335.14+ 12.85(LAT) + -67.76(LON)
         - Standard error shows the approximate variation of the response variable with respect to the predictor variable.
@@ -203,6 +221,7 @@ summary(linear_model)
         - p-value is 2.2e-16 < 0.05,hence there is no relationship between response and predictor variable.
         - 45.13 on 2 and 460 DF, this value is far from 1, hence the model isn't significant.
         - Multiple R-squared:  0.164, 16.4 % well fits the model.
+         
 
 ```{r}
 plot(dataset$LON, dataset$LAT, main = "Longitude and Latitude of census tracts",  xlab="Longitude", ylab="Latitude", col="black", pch=20, cex= 1)
@@ -215,24 +234,20 @@ pred <- predict(linear_model,test)
 compare <- cbind(actual=test$MEDV,pred)
 head(compare)
 ```
-
 ```{r}
 #Mean Square Error
 mean((test$MEDV-pred)^2)
 ```
-
 ```{r}
-#Root mean Square Error
+#Root mean Square Eroor
 library(Metrics)
 rmse(pred, test$MEDV)
 ```
 
 **OBSERVATION**
-            
-        -Therefore, we can observe that our model isn't good fit.
-            
-### 6.Apply Regression Tree to the problem and draw conclusions from it.
+            Therefore, we can observe that our model isn't good fit.
 
+### QUESTION 6.Apply Regression Tree to the problem and draw conclusions from it.
 ```{r}
 library(rpart)
 library(rpart.plot)
@@ -242,18 +257,14 @@ library(rpart.plot)
 tree = rpart(MEDV ~ LAT + LON + CRIM + ZN + INDUS + CHAS + NOX + RM + AGE + DIS + RAD + TAX + PTRATIO, data=dataset)
 prp(tree)
 ```
-
-```{r}
-print(tree, digits = 2)
-```
-
-
 ```{r}
 fittedvalues=predict(tree)
 plot(dataset$LON, dataset$LAT, main = "Longitude and Latitude of census tracts",  xlab="Longitude", ylab="Latitude", col="black", pch=20, cex= 1)
 points(dataset$LON[dataset$MEDV >= 21.2], dataset$LAT[dataset$MEDV >= 21.2], col="#005fba", pch=16)
 points(dataset$LON[fittedvalues >= 21.2],dataset$LAT[fittedvalues >= 21.2],col='red',pch=16)
 ```
+
+
 
 ```{r}
 # Make predictions on the test data
@@ -265,6 +276,5 @@ head(compare1)
 rmse(predictions, test$MEDV)
 ```
 
-*Insight *
-      
-      -We can observe CART model is better than Linear Regression model both by visually and by RMSE.
+**OBSERVATIONS:**
+      We can observe CART model is better than Linear Regression model both by visually and by RMSE.

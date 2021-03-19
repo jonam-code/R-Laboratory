@@ -91,7 +91,17 @@ fig
 linear_model = lm(MEDV ~ LAT + LON, data=dataset)
 summary(linear_model)
 ```
+```{r}
+#linear model
+LAT_model = lm(MEDV ~ LAT, data=dataset)
+summary(LAT_model)
+```
 
+```{r}
+#linear model
+LON_model = lm(MEDV ~ LON, data=dataset)
+summary(LON_model)
+```
 
 ### 6.Apply Regression Tree to the problem and draw conclusions from it.
 ```{r}
@@ -100,7 +110,34 @@ library(rpart.plot)
 ```
 
 ```{r}
-tree = rpart(MEDV ~ LAT + LON + CRIM + ZN + INDUS + CHAS + NOX + RM + AGE + DIS + RAD + TAX + PTRATIO, data=dataset)
+set.seed(35)
+df<-sample(1:nrow(dataset),0.70*nrow(dataset)) 
+train<-dataset[df,]
+test<-dataset[-df,]
+```
+
+
+```{r}
+tree = rpart(MEDV ~ LAT + LON + CRIM + ZN + INDUS + CHAS + NOX + RM + AGE + DIS + RAD + TAX + PTRATIO, data=train)
+summary(tree)
+```
+
+```{r}
 prp(tree)
+```
+
+```{r}
+library(Metrics)
+```
+
+
+```{r}
+pred_test <-predict(tree,test)
+actual_test <-test$MEDV
+rmse(actual_test,pred_test)
+
+pred_train <-predict(tree)
+actual_train <-train$MEDV
+rmse(actual_train,pred_train)
 ```
 

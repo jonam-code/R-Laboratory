@@ -1,0 +1,368 @@
+---
+title: "P7"
+author: "SANDRA MARIA JOSEPH"
+date: "14/03/2021"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Lab#7 Demonstrate the program using Regression Tree**
+
+# IMPORTING DATASET
+```{r}
+#importing boston dataset
+
+data=read.csv("E:/MDS_SEM2/New folder/R_LAB/PROGRAM7/boston.csv")
+head(data)
+```
+```{r}
+#finding the dimension of the dataset
+dim(data)
+```
+```{r}
+#finding the Column names
+colnames(data)
+```
+The boston dataset contains 506 observations in 16 columns.
+The columns are:
+
+  LON and LAT are the longitude and latitude of the center of the census tract.
+  MEDV is the median value of owner-occupied homes, measured in thousands of dollars.
+  CRIM is the per capita crime rate.
+  ZN is related to how much of the land is zoned for large residential properties.
+  INDUS is the proportion of the area used for industry.
+  CHAS is 1 if a census tract is next to the Charles River else 0
+  NOX is the concentration of nitrous oxides in the air, a measure of air pollution.
+  RM is the average number of rooms per dwelling.
+  AGE is the proportion of owner-occupied units built before 1940.
+  DIS is a measure of how far the tract is from centres of employment in Boston.
+  RAD is a measure of closeness to important highways.
+  TAX is the property tax per $10,000 of value.
+  PTRATIO is the pupil to teacher ratio by town
+
+# DATA PREPROCESSING  
+```{r}
+#checking for NAN values
+colSums(is.na(data))
+```
+```{r}
+#checking NULL values
+is.null(data)
+```
+```{r}
+#checking EMPTY values
+colSums(data=='')
+```
+## The dataset is clean.It is free from nan and null values.
+
+```{r}
+#removing Town and Tract
+
+data_new<-subset(data,select=-c(TOWN,TRACT))
+head(data_new)
+
+```
+# EXPLORATORY DATA ANALYSIS
+
+```{r}
+#structure of the dataset
+str(data_new)
+```
+### CHAS, RAD and Tax are of Integer type while all other variables are of numerical data type.
+
+```{r}
+#sample descriptives
+library(psych)
+describe(data_new)
+```
+```{r}
+summary(data_new)
+```
+```{r}
+j=c(1,2,4,5,6,7,8,9,10,11,12,13,14)
+for (i in j)
+{
+  library(car)
+X=data_new[,i]
+Y=data_new$MEDV
+scatterplot(X,
+            Y,
+            xlab =colnames(data_new[i]),
+            ylab=colnames(data_new[3]),
+            boxplots = " ", # Disable boxplots
+            smooth = FALSE, # Removes smooth estimate
+            regLine = TRUE, # add regression line
+            grid = TRUE,
+            main=colnames(data_new[i])
+)
+}
+```
+# ZN, RM, DIS have a positive trend with MEDV.
+
+```{r}
+#Checking Normality of Response Variable
+
+library(e1071)
+plot(density(data_new$MEDV), 
+     main = "Price of the house",
+     ylab="Frequency",
+     sub=paste("Skewness",round(e1071::skewness(data_new$MEDV),2)))
+polygon(density(data_new$MEDV), col='#FFC9A9')
+```
+```{r}
+j=c(1,2,4,5,6,7,8,9,10,11,12,13,14)
+for (i in j)
+{
+x=data_new[,i]
+hist(x,col='yellow',
+     xlab=colnames(data_new[i]),
+     main=colnames(data_new[i]))
+}
+```
+```{r}
+j=c(1,2,4,5,6,7,8,9,10,11,12,13,14)
+for (i in j)
+{
+x=data_new[,i]
+c=density(x)
+plot(c,col='black',
+     xlab=colnames(data_new[i]),
+     main=colnames(data_new[i]),
+     sub=paste("Skewness",round(e1071::skewness(x),2)))
+polygon(c, col = "magenta")
+
+}
+```
+*3. Using the plot commands, plot the latitude and longitude of each of our census tracts.*
+```{r}
+plot(x=data_new$LON,
+     y=data_new$LAT,
+     xlab="LONGITUDE",
+     ylab="LATITUDE",
+     main="Latitude VS Longitude",
+     pch=1,
+    col='green')
+
+```
+```{r}
+library("ggplot2")
+library("gghighlight")
+#data_new$CHAS<-as.factor(data_new$CHAS)
+ggplot(data_new,aes(x=LON,y=LAT,color=CHAS))+geom_point()+labs(title="Latitude & Longitude of Census Track")
+```
+*4. Show all the points that lie along the Charles River in a blue colour.*
+```{r}
+plot(x=data_new$LON,
+     y=data_new$LAT,
+     xlab="LONGITUDE",
+     ylab="LATITUDE",
+     main="Latitude VS Longitude",
+     col='red',
+     pch='+')
+points(data_new$LON[data_new$CHAS==1], data_new$LAT[data_new$CHAS==1], col="blue", pch=18)
+```
+*5.Apply Linear Regression by plotting the relationship between latitude and house prices and the longitude and the house prices.*
+
+```{r}
+ggplot(data=data_new,aes(x=LON,y=MEDV))+stat_smooth(method="lm")+labs(title="Longitude & House Prices",x="Longitude",y="House Price")+geom_point(aes(color=factor(CHAS)))
+```
+```{r}
+ggplot(data=data_new,aes(x=LAT,y=MEDV))+stat_smooth(method="lm")+labs(title="Latitude & House Prices",x="Latitude",y="House Price")+geom_point(aes(color=factor(CHAS)))
+```
+```{r}
+#correlation between Latitude and MEDV
+cor(data_new$LAT,data_new$MEDV)
+```
+```{r}
+#correlation between LON and MEDV
+cor(data_new$LON,data_new$MEDV)
+```
+# Splitting the dataset
+
+```{r}
+#splitting the dataset
+
+set.seed(35)
+spts<-sample(1:nrow(data_new),0.7*nrow(data_new))#70% Training Data
+train<-data_new[spts,]
+test<-data_new[-spts,]
+```
+
+```{r}
+#linear regression model
+lrm <- lm(MEDV~LAT+LON,data=train)
+lrm
+```
+```{r}
+summary(lrm)
+```
+# The regression equation is MEDV= -2722.7072+0.3813*LAT -38.4097*LON.
+# The value of adjusted Rˆ2 is 0.1043 which means the model can explaIN 10.43% variability in MEDV.
+
+```{r}
+pred <- predict(lrm,test)
+compare <- cbind(actual=test$MEDV,pred)
+head(compare)
+```
+```{r}
+#Mean Square Error
+
+mean((test$MEDV-pred)^2)
+```
+```{r}
+#Root mean Square Eroor
+
+RMSE = sqrt(mean((test$MEDV-pred)^2))
+RMSE# calculate accuracy
+```
+The obtained RMSE value is 9.069179.
+
+__________________________________________________________________________________________________________ 
+  *6.Apply Regression Tree to the problem and draw conclusions from it.*
+```{r}
+library(caret)
+```
+
+
+```{r}
+# Fit the model on the training set
+set.seed(123)
+
+model <- train(
+  MEDV ~LAT+LON,
+  data = train, 
+  method = "rpart",
+  trControl = trainControl("cv", number = 10),   #to set up 10-fold cross validation
+  tuneLength = 10                                #to specify the number of possible cp values to evaluate.                                                   Default value is 3, here we use 10.
+  )
+
+# Plot model error vs different values of
+# cp (complexity parameter)
+plot(model)
+
+# Print the best tuning parameter cp that
+# minimize the model RMSE
+model$bestTune
+```
+
+```{r}
+# Plot the final tree model
+par(xpd = NA) # Avoid clipping the text in some device
+plot(model$finalModel)
+text(model$finalModel, digits = 3)
+
+```
+
+```{r}
+# Decision rules in the model
+model$finalModel
+```
+
+
+```{r}
+# Make predictions on the test data
+predictions <- predict(model,test)
+head(predictions)
+```
+
+
+```{r}
+# Compute the prediction error RMSE
+RMSE(predictions, test$MEDV)
+```
+
+```{r}
+library(rpart)
+library(rpart.plot)
+```
+
+
+```{r}
+rtree.fit <- rpart(MEDV ~LAT + LON + CRIM + ZN + INDUS + CHAS + NOX + RM + AGE + DIS + RAD + TAX+PTRATIO, 
+                  data=train,
+                  method="anova",  #for regression tree
+                  control=rpart.control(minsplit=30,cp=0.001))#optional parameters for controlling tree                                                                   growth.
+```
+
+  
+```{r}
+#displays table of fits across cp (complexity parameter) values
+
+printcp(rtree.fit) # display the results 
+```
+```{r}
+#plot approximate R-squared and relative error for different splits
+rsq.rpart(rtree.fit) #produces 2 plots
+```
+```{r}
+plotcp(rtree.fit) # visualize cross-validation results 
+```
+# A good choice of cp for pruning is often the leftmost value for which the mean lies below the horizontal line.
+
+```{r}
+summary(rtree.fit) # detailed summary of splits
+```
+```{r}
+library(rpart.plot)
+rpart.plot(rtree.fit)
+```
+
+
+```{r}
+plot(rtree.fit, uniform=TRUE, 
+    main="Regression Tree for Median Home Value")
+text(rtree.fit, use.n=TRUE, all=TRUE, cex=.8)
+```
+```{r}
+prp(rtree.fit)
+```
+```{r}
+# prune the tree based on minimim xerror
+pruned.rtree.fit<- prune(rtree.fit, cp= rtree.fit$cptable[which.min(rtree.fit$cptable[,"xerror"]),"CP"])
+
+# plot the pruned tree using prp() in the rpart.plot package 
+prp(pruned.rtree.fit, main="Pruned Regression Tree for Median Home Value")
+```
+```{r}
+# prune the tree based on 1 SE error 
+pruned2.rtree.fit<- prune(rtree.fit, cp=.01)
+
+# plot the pruned tree using prp() in the rpart.plot package
+prp(pruned2.rtree.fit, main="Pruned Regression Tree for Median Home Value")
+
+```
+```{r}
+# Make predictions on the test data
+predictions <- predict(rtree.fit,test)
+head(predictions)
+
+# Compute the prediction error RMSE
+RMSE(predictions, test$MEDV)
+```
+
+
+```{r}
+# Make predictions on the test data
+predictions <- predict(pruned.rtree.fit,test)
+head(predictions)
+
+# Compute the prediction error RMSE
+RMSE(predictions, test$MEDV)
+```
+
+
+
+```{r}
+# Make predictions on the test data
+predictions <- predict(pruned2.rtree.fit,test)
+head(predictions)
+
+# Compute the prediction error RMSE
+RMSE(predictions, test$MEDV)
+```
+
+
+
