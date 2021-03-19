@@ -1,0 +1,8 @@
+---
+title: "MANOJ KUMAR - 2048015"
+author: "R-Laboratory 8"
+date: "19/03/2021"
+output:
+  html_document:
+    df_print: paged
+---
