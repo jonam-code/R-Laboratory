@@ -1,0 +1,197 @@
+---
+title: "MANOJ KUMAR - 2048015"
+author: "R-Laboratory 9"
+date: "05/04/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+*The Gift of the Magi*
+
+## STEP 1: Loading the packages 
+
+```{r}
+library("tm")           # for text mining
+library("SnowballC")    # for text stemming
+library("wordcloud")    # word-cloud generator 
+library("wordcloud2")   # word-cloud generator
+library("RColorBrewer") # color palettes
+```
+
+```{r}
+# Read the text file
+filePath <- "The Gift of the Magi.txt"
+```
+
+```{r}
+text <- readLines(filePath)
+```
+
+## Now we are using paste() function in text_file and make it a chunk 
+```{r}
+data <- paste(text, collapse =" ")
+```
+
+```{r}
+#head(data)
+```
+
+## STEP 2: TEXT MINING
+
+    - Converting to Lower-Case.
+    
+```{r}
+data <- iconv(data,"WINDOWS-1252","UTF-8")
+data1 <- tolower(data)
+#head(data1)
+```
+
+    - Removing Punctuations.
+    
+```{r}
+# substituting the values using gsub()
+data2 <- gsub(pattern = "\\W", replace =" " ,data1)
+
+#head(data2)
+```
+
+    - Removing Digits.
+    
+```{r}
+data3 <- gsub(pattern = "\\d", replace =" ", data2)
+#head(data3)
+```
+
+    - Extracting Stopwords and Removing them.
+
+```{r}
+stopwords()
+```
+
+```{r}
+# Removing stop words using removeWords()
+
+data4 <- removeWords(data3,words = c(stopwords(),'ó'))
+#head(data4)
+```
+
+      - Removing single letters.
+      
+```{r}
+data5 <- gsub(pattern = "\\b[A-z]\\b{1}", replace = " ",data4 )
+#head(data5)
+```
+
+      - Removing White Spaces.
+      
+```{r}
+# Removing White Spaces stripWhitespace
+data6 <- stripWhitespace(data5)
+#head(data6)
+```
+
+## STEP 3: Splitting Individual Words
+
+```{r}
+data7 <- strsplit(data6," ")
+#head(data7)
+```
+
+## STEP 4: Create Word Frequency Table
+
+```{r}
+collections <- table(data7)
+head(collections)
+```
+
+```{r}
+word_freq1 <- cbind(names(collections), as.integer(collections))
+head(word_freq1)
+```
+
+**Creating Term Document Matrix**
+```{r}
+docs <- Corpus(VectorSource(data7))
+dtm <- TermDocumentMatrix(docs)
+m <- as.matrix(dtm)
+v <- sort(rowSums(m),decreasing=TRUE)
+d <- data.frame(word = names(v),freq=v)
+head(d, 10)
+```
+
+**To find words that occur at least 10 times**
+```{r}
+findFreqTerms(dtm, 
+              lowfreq = 10
+              )
+```
+
+**Plot word frequencies**
+```{r}
+barplot(d[1:25,]$freq, 
+        las = 2, 
+        names.arg = d[1:25,]$word,
+        col ="brown", 
+        main ="Most frequent words",
+        ylab = "Word frequencies"
+        )
+```
+**WORD CLOUD**
+```{r}
+word_cloud <- unlist(data7)
+wordcloud(word_cloud)
+```
+
+```{r}
+wordcloud(word_cloud,
+          min.freq =9,
+          random.order = FALSE,
+          scale=c(3, 0.6))
+```
+```{r}
+wordcloud(word_cloud,
+          min.freq = 4, 
+          max.words=40, 
+          random.order=F, 
+          rot.per=0.2,
+          colors=brewer.pal(5, "Paired"), 
+          scale=c(4,0.2)
+          )
+```
+```{r}
+wordcloud2(collections)
+```
+
+```{r}
+wordcloud2(collections, 
+           size = 0.5,
+           color='random-light', 
+           backgroundColor="black",
+           shape="pentagon")
+```
+
+```{r}
+wordcloud2(collections, 
+           size = 0.4, 
+           shape = 'star')
+```
+
+
+```{r}
+wordcloud2(collections, size = 2.3, 
+           minRotation = -pi/6, 
+           maxRotation = -pi/6, 
+           rotateRatio = 1)
+
+```
+
+
+```{r}
+letterCloud(collections, word = "Magi", 
+            color='random-light', 
+            wordSize = 1.5)
+```
+
+
+

@@ -1,0 +1,165 @@
+---
+title: "MANOJ KUMAR - 2048015"
+author: "R-Laboratory 9"
+date: "05/04/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+*TEXT TAKEN: The Gift of the Magi*
+________________________________________________________________
+
+**STEP 1: Retrieving the data and uploading the packages**
+----------------------------------------------------------------
+```{r}
+#install.packages("tm")  # for text mining
+#install.packages("SnowballC") # for text stemming
+#install.packages("wordcloud") # word-cloud generator 
+#install.packages("wordcloud2")
+#install.packages("RColorBrewer") # color palettes
+```
+
+#LOADING THE PACKAGES
+```{r}
+library("tm")
+library("SnowballC")
+library("wordcloud")
+library("wordcloud2")
+library("RColorBrewer")
+```
+
+**Step 2 : Text mining**
+------------------------------------
+```{r}
+# Read the text file
+filePath <- "The Gift of the Magi.txt"
+```
+
+
+```{r}
+text <- readLines(filePath)
+```
+
+#Now we are using paste() function in text_file and make it a chunk 
+```{r}
+data <- paste(text, collapse =" ")
+```
+
+```{r}
+#head(data)
+```
+
+**STEP 2: TEXT MINING**
+-------------------------------------
+
+    *1).Converting to Lower-Case*
+    
+```{r}
+data <- iconv(data,"WINDOWS-1252","UTF-8")
+data1 <- tolower(data)
+#head(data1)
+```
+
+    *2).Removing Punctuations*
+```{r}
+data2 <- gsub(pattern = "\\W", replace =" " ,data1)
+#head(data2)
+```
+
+    *3).Removing Digits*
+```{r}
+data3 <- gsub(pattern = "\\d", replace =" ", data2)
+#head(data3)
+```
+
+    *4).Extracting Stopwords and Removing them.*
+
+```{r}
+stopwords()
+```
+
+```{r}
+data4 <- removeWords(data3,words = c(stopwords(),'ó'))
+#head(data4)
+```
+
+      *5)Removing single letters.
+```{r}
+data5 <- gsub(pattern = "\\b[A-z]\\b{1}", replace = " ",data4 )
+#head(data5)
+```
+
+      *6). Removing White Spaces*
+```{r}
+data6 <- stripWhitespace(data5)
+#head(data6)
+```
+
+**STEP 3: Splitting Individual Words**
+--------------------------------------------
+```{r}
+data7 <- strsplit(data6," ")
+#head(data7)
+```
+**STEP 4: Create Word Frequency Table**
+
+```{r}
+word_freq_tab <- table(data7)
+head(word_freq_tab)
+```
+
+```{r}
+word_freq1 <- cbind(names(word_freq_tab), as.integer(word_freq_tab))
+head(word_freq1)
+```
+
+**Creating Term Document Matrix**
+--------------------------------------------------
+```{r}
+docs <- Corpus(VectorSource(data7))
+dtm <- TermDocumentMatrix(docs)
+m <- as.matrix(dtm)
+v <- sort(rowSums(m),decreasing=TRUE)
+d <- data.frame(word = names(v),freq=v)
+head(d, 10)
+```
+
+**To find words that occur at least 100 times**
+-----------------------------------------------------
+```{r}
+findFreqTerms(dtm, lowfreq = 100)
+```
+
+```{r}
+findAssocs(dtm, terms = "\"caesar\",", corlimit = 0.7)
+```
+**Plot word frequencies**
+----------------------------------------------
+```{r}
+barplot(d[1:25,]$freq, las = 2, names.arg = d[1:25,]$word,
+        col ="orange", main ="Most frequent words",
+        ylab = "Word frequencies")
+```
+**WORD CLOUD**
+```{r}
+word_cloud <- unlist(data7)
+wordcloud(word_cloud)
+```
+
+```{r}
+wordcloud(word_cloud,min.freq =9,random.order = FALSE,scale=c(3, 0.6))
+```
+```{r}
+wordcloud(word_cloud,min.freq = 9, max.words=1000, random.order=F, rot.per=0.2,
+colors=brewer.pal(5, "Paired"), scale=c(4,0.2))
+```
+```{r}
+wordcloud2(word_freq_tab)
+```
+
+```{r}
+wordcloud2(word_freq_tab, color='random-light' , backgroundColor="black",shape="pentagon")
+```
+
