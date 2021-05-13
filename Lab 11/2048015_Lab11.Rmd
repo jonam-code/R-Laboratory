@@ -1,0 +1,198 @@
+---
+title: "Lab 11"
+author: "MANOJ KUMAR"
+date: "25/04/2021"
+output: 
+  html_document:
+      toc: true # table of content true
+      toc_depth: 3  # upto three depths of headings (specified by #, ## and ###)
+      number_sections: false  ## if you want number sections at each table header
+      theme: united  # many options for theme, this one is my favorite.
+      highlight: tango  # specifies the syntax highlighting style
+---
+
+# INTRODUCTION
+
+## 1.Load the necessary packages 
+
+```{r}
+library(tidyverse)  # For data cleaning, sorting, and visualization
+library(DataExplorer) # For Exploratory Data Analysis
+library(gridExtra) # To plot several plots in one figure
+library(ggpubr) # To prepare publication-ready plots
+library(GGally) # For correlations
+library(caTools) # For classification model
+library(rpart) # For classification model
+
+```
+
+## 2.Load the dataset
+
+```{r}
+df <- read.csv("heart.csv")
+```
+
+# EXPLORATORY DATA ANALYSIS
+
+### 1.Tidy dataset
+```{r}
+copy <- df
+
+df2 <- df %>%
+  filter(
+    thal != 0 & ca != 4 # remove values correspondind to NA in original dataset
+  ) %>%
+# Recode the categorical variables as factors using the dplyr library.
+  mutate(
+    sex = case_when(
+      sex == 0 ~ "female",
+      sex == 1 ~ "male"
+           ),
+    fbs = case_when(
+      fbs == 0 ~ "<=120",
+      fbs == 1 ~ ">120"
+            ),
+    exang = case_when(
+      exang == 0 ~ "no",
+      exang == 1 ~ "yes"
+            ),
+    cp = case_when(
+      cp == 3 ~ "typical angina",
+      cp == 1 ~ "atypical angina",
+      cp == 2 ~ "non-anginal",
+      cp == 0 ~ "asymptomatic angina"
+          ),
+    restecg = case_when(
+      restecg == 0 ~ "hypertrophy",
+      restecg == 1 ~ "normal",
+      restecg == 2 ~ "wave abnormality"
+              ),
+    target = case_when(
+      target == 1 ~ "asymptomatic",
+      target == 0 ~ "heart-disease"
+              ),
+    slope = case_when(
+      slope == 2 ~ "upsloping",
+      slope == 1 ~ "flat",
+      slope == 0 ~ "downsloping"
+    ),
+    thal = case_when(
+      thal == 1 ~ "fixed defect",
+      thal == 2 ~ "normal",
+      thal == 3 ~ "reversable defect"
+    ),
+    sex = as.factor(sex),
+    fbs = as.factor(fbs),
+    exang = as.factor(exang),
+    cp = as.factor(cp),
+    slope = as.factor(slope),
+    ca = as.factor(ca),
+    thal = as.factor(thal)
+  )
+
+glimpse(df2) # Check that the transformnation worked
+```
+
+### 2. Missing plot
+```{r}
+plot_missing(df2) # Check that the transformation did not induce NA values
+```
+```{r}
+df <- df2
+```
+
+
+### 3.A Visualize the data summary and distribution of each variable
+```{r}
+df %>%
+  summary()
+```
+
+```{r}
+plot_density(df, ggtheme = theme_classic2(), geom_density_args = list("fill" = "black", "alpha" = 0.6))
+```
+
+```{r}
+plot_bar(df, ggtheme = theme_classic2())
+```
+
+### 4.Prepare a summary table per disease and gender
+
+```{r}
+df %>%
+  group_by(target, sex) %>%
+  summarise(
+    n_disease = n(),
+    mean_age = round(mean(age), digits=2),
+    sd_age = round(sd(age), digits=2),
+    mean_trestbps = round(mean(trestbps), digits=2),
+    sd_trestbps = round(sd(trestbps), digits=2),
+    mean_chol = round(mean(chol), digits=2),
+    sd_chol = round(sd(chol), digits=2),
+    mean_thalach = round(mean(thalach), digits=2),
+    sd_thalach = round(sd(thalach), digits=2),
+    mean_oldpeak = round(mean(oldpeak), digits=2),
+    sd_oldpeak = round(sd(oldpeak), digits=2)
+  )
+```
+
+
+# DATA VISUALIZATION
+
+## 1.Visualization of variables per gender
+
+## Correlation
+
+```{r}
+df <- copy %>%
+  filter(
+    thal != 0 & ca != 4 # remove values correspondind to NA in original dataset
+    )
+
+# ggcorr(df, palette = "RdBu")
+GGally::ggcorr(df, geom = "circle")
+```
+
+```{r}
+select2 <- df %>%
+  dplyr::select(
+    target,
+    slope,
+    thalach,
+    restecg,
+    cp
+  )
+
+ggcorr(select2, geom = "circle")
+```
+
+```{r, warning= "false"}
+ggpairs(select2)
+```
+
+From the correlation study it seems that the parameters
+* cp
+* restecg
+* thalach
+* slope
+are the most usefull to predict the risk of heart disease
+
+From the EDA anlysis it seems that
+* age
+* sex
+* cholesterol
+* restecg, are also usefull
+
+For prediction the following variables seems the most usefull
+* age
+* sex
+* cholesterol
+* restecg
+* cp
+* thalach
+* slope
+
+```{r}
+select2
+```
+

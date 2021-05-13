@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<!-- saved from url=(0049)https://rpubs.com/neharaut05/HeartdiseasePred_SVM -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta content="IE=edge" http-equiv="X-UA-Compatible">
+
+<title>RPubs - Heart Disease Prediction using SVM</title>
+<meta name="csrf-param" content="authenticity_token">
+<meta name="csrf-token" content="0r44LuPJMIEhsgrbEL8B2zxHBx2gzwtVRyeusQ3qtjNy7vkE0g8h0WW61soh52uLy2GayoHXF6MXNRuzJLztjg==">
+<link rel="stylesheet" media="all" href="./RPubs - Heart Disease Prediction using SVM_files/application-3956e416c438f98e8d8b82b039d6ac6cd5417ad8d51825485256a39737302686.css">
+<link rel="stylesheet" media="all" href="./RPubs - Heart Disease Prediction using SVM_files/show-58702f9d9025877672e50953d29b220ea08ef2b5acac46cef96fb9182e555801.css">
+<script async="" src="./RPubs - Heart Disease Prediction using SVM_files/analytics.js"></script><script src="./RPubs - Heart Disease Prediction using SVM_files/application-050918065a747f23455921e989643a0f9050e5da8573c9858fc4266f0ec88af2.js"></script>
+<link rel="stylesheet" href="./RPubs - Heart Disease Prediction using SVM_files/tzi3tjz.css">
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-20375833-3', 'auto', {'allowLinker': true});
+  ga('require', 'linker');
+  ga('linker:autoLink', ['rstudio.com', 'rstudio.github.io', 'rviews.rstudio.com', 'community.rstudio.com', 'rpubs.rstudio.com', 'environments.rstudio.com', 'rstudio.org', 'dailies.rstudio.com', 'pages.rstudio.com', 'db.rstudio.com', 'solutions.rstudio.com', 'docs.rstudio.com', 'spark.rstudio.com', 'shiny.rstudio.com', 'education.rstudio.com', 'rstudio.cloud', 'shinyapps.io', 'teamadmin.rstudio.com', 'blog.rstudio.com', 'support.rstudio.com'] );
+  ga('send', 'pageview');
+</script>
+
+<script type="text/javascript" async="" src="./RPubs - Heart Disease Prediction using SVM_files/embed.js"></script><link rel="prefetch" as="style" href="https://c.disquscdn.com/next/embed/styles/lounge.f67f72a16316b5b112574bb60330e588.css"><link rel="prefetch" as="script" href="https://c.disquscdn.com/next/embed/common.bundle.f485ba8b89bf2153fdb9f493ec342aed.js"><link rel="prefetch" as="script" href="https://c.disquscdn.com/next/embed/lounge.bundle.1b993320a2851b6ec858689d65d1e609.js"><link rel="prefetch" as="script" href="https://disqus.com/next/config.js"><script async="" id="dsq_recs_scr" src="./RPubs - Heart Disease Prediction using SVM_files/recommendations.js"></script><link rel="prefetch" as="style" href="https://c.disquscdn.com/next/recommendations/styles/recommendations.eff219b98b7c4167b4b289065f36f391.css"><link rel="prefetch" as="script" href="https://c.disquscdn.com/next/recommendations/common.bundle.9aad4e5af3027dd4fbeac9669fb17819.js"><link rel="prefetch" as="script" href="https://c.disquscdn.com/next/recommendations/recommendations.bundle.4214219f8f12995fa46e1e83745b2a0e.js"><link rel="prefetch" as="script" href="https://disqus.com/next/config.js"><meta content="width=device-width, initial-scale=1" name="viewport"></head>
+<body class="show-pub show-toolbars" data-new-gr-c-s-check-loaded="14.1007.0" data-gr-ext-installed="" data-new-gr-c-s-loaded="14.1007.0">
+<div class="modal hidden-originally" id="login" style="display: none" data-pf_style_display="none" data-pf_style_visibility="visible">
+<div class="modal-header" data-pf_style_display="block" data-pf_style_visibility="visible">
+<h1 data-pf_style_display="block" data-pf_style_visibility="visible">Sign In</h1>
+</div>
+<div class="modal-body" data-pf_style_display="block" data-pf_style_visibility="visible">
+<div class="alert hidden-originally" id="login_message" style="display: none" data-pf_style_display="none" data-pf_style_visibility="visible"></div>
+<form action="https://rpubs.com/auth/login" accept-charset="UTF-8" method="post" data-pf_style_display="block" data-pf_style_visibility="visible"><input name="utf8" type="hidden" value="✓" data-pf_style_display="none" data-pf_style_visibility="visible" class="hidden-originally"><input type="hidden" name="authenticity_token" value="0r44LuPJMIEhsgrbEL8B2zxHBx2gzwtVRyeusQ3qtjNy7vkE0g8h0WW61soh52uLy2GayoHXF6MXNRuzJLztjg==" data-pf_style_display="none" data-pf_style_visibility="visible" class="hidden-originally">
+<input name="return_url" type="hidden" data-pf_style_display="none" data-pf_style_visibility="visible" class="hidden-originally" value="">
+<div class="fieldset" data-pf_style_display="block" data-pf_style_visibility="visible">
+<div class="control-group" data-pf_style_display="block" data-pf_style_visibility="visible">
+<label class="control-label" for="login_username" data-pf_style_display="block" data-pf_style_visibility="visible">Username or Email</label>
+<div class="controls" data-pf_style_display="block" data-pf_style_visibility="visible">
+<input class="input-xlarge" id="login_username" name="username" type="text" data-pf_style_display="inline-block" data-pf_style_visibility="visible" value="">
+</div>
+</div>
+<div class="control-group" data-pf_style_display="block" data-pf_style_visibility="visible">
+<label class="control-label" for="login_password" data-pf_style_display="block" data-pf_style_visibility="visible">Password</label>
+<div class="controls" data-pf_style_display="block" data-pf_style_visibility="visible">
+<input class="input-xlarge" id="login_password" name="password" type="password" data-pf_style_display="inline-block" data-pf_style_visibility="visible" value="">
+</div>
+</div>
+<div class="control-group" data-pf_style_display="block" data-pf_style_visibility="visible">
+<a href="https://rpubs.com/auth/passwordhelp" target="_blank" data-pf_style_display="inline" data-pf_style_visibility="visible">Forgot your password?</a>
+</div>
+</div>
+</form>
+
+
+</div>
+<div class="modal-footer" data-pf_style_display="block" data-pf_style_visibility="visible">
+<button class="btn btn-primary" id="login-modal-submit" data-pf_style_display="inline-block" data-pf_style_visibility="visible">Sign In</button>
+<button class="btn" id="login-modal-cancel" data-pf_style_display="inline-block" data-pf_style_visibility="visible">Cancel</button>
+</div>
+</div>
+
+<div id="pagebody" data-pf_style_display="block" data-pf_style_visibility="visible">
+<div id="payload" data-pf_style_display="block" data-pf_style_visibility="visible">
+<iframe src="./RPubs - Heart Disease Prediction using SVM_files/515645_f10d31b4a3f84944a19d3db0787ee0d2.html" data-pf_style_display="inline" data-pf_style_visibility="visible" data-pf_rect_width="1440" data-pf_rect_height="633"></iframe>
+<button class="btn btn-tiny hidden-originally" id="btn-show-toolbars" data-pf_style_display="block" data-pf_style_visibility="hidden">
+<i class="icon-resize-small hidden-originally" data-pf_style_display="inline-block" data-pf_style_visibility="hidden"></i>
+</button>
+</div>
+<div class="navbar navbar-fixed-bottom" id="pagefooter" data-pf_style_display="block" data-pf_style_visibility="visible">
+<div class="navbar-inner" data-pf_style_display="block" data-pf_style_visibility="visible">
+<div class="container-fluid" data-pf_style_display="block" data-pf_style_visibility="visible">
+<ul class="nav" id="pubmeta" data-pf_style_display="block" data-pf_style_visibility="visible">
+<li id="pubtitle" data-pf_style_display="block" data-pf_style_visibility="visible">
+<label data-pf_style_display="block" data-pf_style_visibility="visible">Heart Disease Prediction using SVM</label>
+</li>
+<li id="pubauthor" data-pf_style_display="block" data-pf_style_visibility="visible">
+<a href="https://rpubs.com/neharaut05" data-pf_style_display="block" data-pf_style_visibility="visible">by Neha Raut</a>
+</li>
+<li id="pubtime" data-pf_style_display="block" data-pf_style_visibility="visible">
+<label data-pf_style_display="block" data-pf_style_visibility="visible">
+Last updated
+<time datetime="2019-07-26T21:20:19+00:00" data-pf_style_display="inline" data-pf_style_visibility="visible">over 1 year ago</time>
+</label>
+</li>
+</ul>
+<ul class="nav pull-right" data-pf_style_display="block" data-pf_style_visibility="visible">
+<li data-pf_style_display="block" data-pf_style_visibility="visible">
+<button class="btn btn-small btn-success" id="btn-comments" data-pf_style_display="inline-block" data-pf_style_visibility="visible">
+<i class="icon-comment icon-white" data-pf_style_display="inline-block" data-pf_style_visibility="visible"></i>
+<span id="comment-verb-hide" data-pf_style_display="none" data-pf_style_visibility="visible" class="hidden-originally">
+Hide
+</span>
+Comments
+<span id="comment-count" data-pf_style_display="inline" data-pf_style_visibility="visible">
+(–)
+</span>
+</button>
+<button class="btn btn-small btn-info" id="btn-share" data-pf_style_display="inline-block" data-pf_style_visibility="visible">
+<i class="icon-share icon-white" data-pf_style_display="inline-block" data-pf_style_visibility="visible"></i>
+Share
+</button>
+<button class="btn btn-small btn-inverse" id="btn-hide-toolbars" data-pf_style_display="inline-block" data-pf_style_visibility="visible">
+Hide Toolbars
+</button>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="modal hide hidden-originally" id="modal-share" data-pf_style_display="none" data-pf_style_visibility="visible">
+<div class="modal-body" data-pf_style_display="block" data-pf_style_visibility="visible">
+<btn class="close" data-dismiss="modal" type="button" data-pf_style_display="block" data-pf_style_visibility="visible">×</btn>
+<h2 class="first" data-pf_style_display="block" data-pf_style_visibility="visible">Post on:</h2>
+<p data-pf_style_display="block" data-pf_style_visibility="visible">
+<a class="btn btn-primary btn-large" href="https://twitter.com/intent/tweet?original_referer=http%3A%2F%2Frpubs.com%2Fneharaut05%2FHeartdiseasePred_SVM&amp;source=tweetbutton&amp;text=Heart%20Disease%20Prediction%20using%20SVM&amp;url=http%3A%2F%2Frpubs.com%2Fneharaut05%2FHeartdiseasePred_SVM" onclick="window.open(this.href, &#39;&#39;, &#39;menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=275,width=660&#39;);return false;" data-pf_style_display="inline-block" data-pf_style_visibility="visible">
+Twitter
+</a>
+<a class="btn btn-primary btn-large" href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Frpubs.com%2Fneharaut05%2FHeartdiseasePred_SVM&amp;t=Heart%20Disease%20Prediction%20using%20SVM" onclick="window.open(this.href, &#39;&#39;, &#39;menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=350,width=660&#39;);return false;" data-pf_style_display="inline-block" data-pf_style_visibility="visible">
+Facebook
+</a>
+<a class="btn btn-primary btn-large" href="https://plus.google.com/share?url=http%3A%2F%2Frpubs.com%2Fneharaut05%2FHeartdiseasePred_SVM" onclick="window.open(this.href, &#39;&#39;, &#39;menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600&#39;);return false;" data-pf_style_display="inline-block" data-pf_style_visibility="visible">
+Google+
+</a>
+</p>
+<hr data-pf_style_display="block" data-pf_style_visibility="visible">
+<h3 data-pf_style_display="block" data-pf_style_visibility="visible">Or copy &amp; paste this link into an email or IM:</h3>
+<input onclick="this.select()" readonly="readonly" value="http://rpubs.com/neharaut05/HeartdiseasePred_SVM" data-pf_style_display="inline-block" data-pf_style_visibility="visible">
+</div>
+</div>
+<script data-pf_style_display="none" data-pf_style_visibility="visible" class="hidden-originally">
+  $('#btn-edit').click(function() {
+    location.href = "/neharaut05/515645/edit";
+  });
+  $('#btn-delete').mouseover(function() {
+    $('#btn-delete').removeClass('btn-inverse').addClass('btn-danger');
+  });
+  $('#btn-delete').mouseout(function() {
+    $('#btn-delete').addClass('btn-inverse').removeClass('btn-danger');
+  });
+  $('#btn-hide-toolbars').click(function() {
+    $(document.body).addClass('hide-toolbars');
+    $(document.body).removeClass('show-toolbars');
+  });
+  $('#btn-show-toolbars').click(function() {
+    $(document.body).addClass('show-toolbars');
+    $(document.body).removeClass('hide-toolbars');
+  });
+  $('#btn-share').click(function() {
+    $('#modal-share').modal().css({
+      'margin-left': function () {
+        return -($(this).width() / 2);
+      }
+    });
+  });
+  $('#btn-comments').click(function() {
+    $(document.body).toggleClass('show-comments');
+  });
+  setInterval(function() {
+    // Poll for comment count. Barf.
+    var text = $('#dsq-num-posts').text();
+    if (text && /^\d+$/.test(text))
+      $('#comment-count').text('(' + text + ')');
+  }, 1000);
+</script>
+<div id="comment-wrapper" data-pf_style_display="block" data-pf_style_visibility="visible">
+<div id="disqus_recommendations" style="margin-bottom: 12px;" data-pf_style_display="block" data-pf_style_visibility="visible"><iframe id="dsq-app7079" name="dsq-app7079" allowtransparency="true" frameborder="0" scrolling="no" tabindex="0" title="Disqus" width="100%" src="./RPubs - Heart Disease Prediction using SVM_files/saved_resource.html" style="width: 100% !important; border: none !important; overflow: hidden !important; height: 0px !important; display: inline !important; box-sizing: border-box !important;" horizontalscrolling="no" verticalscrolling="no" data-pf_style_display="inline" data-pf_style_visibility="visible" data-pf_rect_width="0" data-pf_rect_height="0"></iframe></div><div id="disqus_thread" data-pf_style_display="block" data-pf_style_visibility="hidden" class="hidden-originally"><iframe id="dsq-app8677" name="dsq-app8677" allowtransparency="true" frameborder="0" scrolling="no" tabindex="0" title="Disqus" width="100%" src="./RPubs - Heart Disease Prediction using SVM_files/saved_resource(1).html" style="width: 1px !important; min-width: 100% !important; border: none !important; overflow: hidden !important; height: 1418px !important;" horizontalscrolling="no" verticalscrolling="no" data-pf_style_display="inline" data-pf_style_visibility="hidden" data-pf_rect_width="1" data-pf_rect_height="1418" class="hidden-originally"></iframe></div>
+</div>
+
+</div>
+
+
+<iframe style="display: none;" data-pf_style_display="none" data-pf_style_visibility="visible" data-pf_rect_width="0" data-pf_rect_height="0" class="hidden-originally" src="./RPubs - Heart Disease Prediction using SVM_files/saved_resource(2).html"></iframe><iframe style="display: none;" data-pf_style_display="none" data-pf_style_visibility="visible" data-pf_rect_width="0" data-pf_rect_height="0" class="hidden-originally" src="./RPubs - Heart Disease Prediction using SVM_files/saved_resource(3).html"></iframe></body></html>
