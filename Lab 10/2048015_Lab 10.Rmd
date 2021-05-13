@@ -1,0 +1,138 @@
+---
+title: "MANOJ KUMAR - 2048015"
+author: "R-Laboratory 10"
+date: "12/04/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+# 1.Load the necessary packages for clustering.
+
+```{r}
+library(tidyverse)  # data manipulation
+library(cluster)    # clustering algorithms
+library(factoextra) # clustering visualization
+library(dendextend) # for comparing two dendrograms
+library(corrplot)   # corrplot 
+```
+
+# 2.Remove the unnecessary data.
+
+```{r}
+df <- USArrests
+df
+```
+```{r}
+df <- na.omit(df)
+```
+
+```{r}
+# Compute correlation matrix
+
+res <- cor(df)
+corrplot(res, type = "upper", order = "hclust", tl.col = "black", tl.srt = 45)
+```
+
+# 3.Scale/Standardise the data.
+
+```{r}
+df <- scale(df)
+head(df)
+```
+
+# 4.Perform Agglomerative Hierarchical Clustering by computing dissimilarity values and perform any hierarchical clustering method like complete linkage and then plot the dendogram.
+
+```{r}
+# Dissimilarity matrix
+d <- dist(df, method = "euclidean")
+
+# Hierarchical clustering using Complete Linkage
+hc1 <- hclust(d, method = "complete" )
+
+# Plot the obtained dendrogram
+plot(hc1, cex = 0.6, hang = -1)
+```
+```{r}
+# Compute with agnes
+hc2 <- agnes(df, method = "complete")
+
+# Agglomerative coefficient
+hc2$ac
+```
+
+```{r}
+# methods to assess
+m <- c( "average", "single", "complete", "ward")
+names(m) <- c( "average", "single", "complete", "ward")
+
+# function to compute coefficient
+ac <- function(x) {
+  agnes(df, method = x)$ac
+}
+
+map_dbl(m, ac)
+```
+
+```{r}
+hc3 <- agnes(df, method = "ward")
+pltree(hc3, cex = 0.6, hang = -1, main = "Dendrogram of agnes - ward") 
+```
+
+```{r}
+hc3 <- agnes(df, method = "single")
+pltree(hc3, cex = 0.6, hang = -1, main = "Dendrogram of agnes - single") 
+```
+```{r}
+hc3 <- agnes(df, method = "average")
+pltree(hc3, cex = 0.6, hang = -1, main = "Dendrogram of agnes - average") 
+```
+
+## Sub-Group
+
+```{r}
+# Ward's method
+hc5 <- hclust(d, method = "ward.D2" )
+
+# Cut tree into 4 groups
+sub_grp <- cutree(hc5, k = 5)
+
+# Number of members in each cluster
+table(sub_grp)
+```
+
+```{r}
+plot(hc5, cex = 0.6)
+rect.hclust(hc5, k = 5, border = 2:5)
+```
+```{r}
+fviz_cluster(list(data = df, cluster = sub_grp))
+```
+
+
+# 5.Determine optimal number of clusters
+
+
+```{r}
+# Elbow Method
+
+fviz_nbclust(df, FUN = hcut, method = "wss")
+
+```
+
+```{r}
+# Average Silhouette Method
+
+fviz_nbclust(df, FUN = hcut, method = "silhouette")
+
+```
+
+```{r}
+# Gap Statistic Method
+
+gap_stat <- clusGap(df, FUN = hcut, nstart = 25, K.max = 10, B = 50)
+fviz_gap_stat(gap_stat)
+```
+
+
